@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>128bitcalculator — Math, but chunkier.</title>
+<meta name="description" content="128bitcalculator is the 128bit family's pixel calculator: a chunky, satisfying calculator with a history tape, quests and a widget for bitlauncher. Coming soon.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0b16;
+    --panel:#141428;
+    --orange:#ff9f1c;
+    --orange-deep:#a05e00;
+    --teal:#2dd4bf;
+    --red:#ff5d5d;
+    --ink:#f4f1ff;
+    --muted:#9a97b8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(rgba(255,159,28,.08) 1px, transparent 1px);background-size:22px 22px}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px;position:relative;z-index:1}
+  .pixel{font-family:'Press Start 2P',monospace}
+  nav{display:flex;justify-content:space-between;align-items:center;padding:22px 0}
+  .logo{display:flex;align-items:center;gap:12px;font-family:'Press Start 2P',monospace;font-size:15px}
+  .logo-mark{width:34px;height:34px;background:var(--orange);display:grid;place-items:center;font-size:18px;box-shadow:0 4px 0 var(--orange-deep), 4px 0 0 var(--orange-deep), -4px 0 0 var(--orange-deep), 0 -4px 0 var(--orange-deep);image-rendering:pixelated}
+  .badge{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--bg);background:var(--teal);padding:8px 10px;letter-spacing:1px;box-shadow:0 4px 0 #0e7490}
+  header{text-align:center;padding:52px 0 30px}
+  .eyebrow{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--orange);letter-spacing:2px;margin-bottom:26px}
+  h1{font-family:'Press Start 2P',monospace;font-size:clamp(22px,5.5vw,44px);line-height:1.35;margin-bottom:24px;text-shadow:0 4px 0 #1a1a33, 4px 0 0 #1a1a33}
+  h1 .o{color:var(--orange)} h1 .t{color:var(--teal)}
+  .sub{color:var(--muted);font-size:18px;max-width:620px;margin:0 auto 20px;line-height:1.6}
+  .try{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--teal);letter-spacing:1px;margin-bottom:26px}
+  /* ---------- calculator ---------- */
+  .calc-zone{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;align-items:flex-start;padding-bottom:20px}
+  .calc{background:var(--panel);border:3px solid #2a2a4a;padding:18px;width:320px;box-shadow:8px 8px 0 #000}
+  .display{background:#0b0b16;border:3px solid #2a2a4a;padding:14px 12px;text-align:right;margin-bottom:14px;min-height:74px}
+  .display .expr{font-size:13px;color:var(--muted);min-height:18px;word-break:break-all}
+  .display .val{font-family:'Press Start 2P',monospace;font-size:22px;color:var(--orange);word-break:break-all}
+  .keys{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .keys button{font-family:'Press Start 2P',monospace;font-size:13px;padding:14px 0;background:#1f1f3a;color:var(--ink);border:none;cursor:pointer;box-shadow:0 4px 0 #000}
+  .keys button:active{transform:translateY(3px);box-shadow:0 1px 0 #000}
+  .keys button.op{background:#2a2a4a;color:var(--teal)}
+  .keys button.eq{background:var(--orange);color:#0b0b16;box-shadow:0 4px 0 var(--orange-deep)}
+  .keys button.clr{color:var(--red)}
+  .keys button.wide{grid-column:span 2}
+  /* ---------- tape ---------- */
+  .tape{background:var(--panel);border:3px solid #2a2a4a;padding:18px;width:300px;box-shadow:8px 8px 0 #000}
+  .tape h3{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--teal);margin-bottom:14px}
+  .tape ul{list-style:none;font-size:14px;line-height:1.9;color:var(--muted)}
+  .tape ul li b{color:var(--ink)}
+  .tape .empty{color:var(--muted);font-style:italic}
+  .quest{margin-top:16px;background:#1f1f3a;padding:12px;font-size:13px;line-height:1.6}
+  .quest b{color:var(--orange)}
+  .quest .bar{height:10px;background:#0b0b16;margin-top:8px}
+  .quest .bar i{display:block;height:100%;background:var(--orange);width:0%;transition:width .3s}
+  /* ---------- features ---------- */
+  .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;padding:36px 0}
+  .feat{background:var(--panel);border:3px solid #2a2a4a;padding:20px}
+  .feat h3{font-family:'Press Start 2P',monospace;font-size:11px;margin-bottom:10px;color:var(--orange)}
+  .feat p{color:var(--muted);font-size:14px;line-height:1.6}
+  /* ---------- waitlist ---------- */
+  .waitlist{background:var(--panel);border:3px solid #2a2a4a;padding:28px;text-align:center;margin-bottom:40px}
+  .waitlist h2{font-family:'Press Start 2P',monospace;font-size:14px;margin-bottom:16px}
+  .waitlist form{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .waitlist input{padding:12px 14px;background:#0b0b16;border:3px solid #2a2a4a;color:var(--ink);font-size:14px;min-width:240px}
+  .waitlist button{font-family:'Press Start 2P',monospace;font-size:10px;padding:12px 18px;background:var(--orange);color:#0b0b16;border:none;cursor:pointer;box-shadow:0 4px 0 var(--orange-deep)}
+  .waitlist .note{color:var(--muted);font-size:13px;margin-top:12px}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding:20px 0 40px}
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(80px);background:var(--orange);color:#0b0b16;font-family:'Press Start 2P',monospace;font-size:11px;padding:14px 20px;box-shadow:0 4px 0 var(--orange-deep);transition:transform .3s;z-index:10}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <div class="logo"><span class="logo-mark">🧮</span> 128bitcalculator</div>
+    <span class="badge">COMING SOON</span>
+  </nav>
+
+  <header>
+    <div class="eyebrow">PART OF THE 128BIT FAMILY</div>
+    <h1>Math, but <span class="o">chunkier</span>.</h1>
+    <p class="sub">A pixel calculator that makes arithmetic feel good: chunky buttons, a satisfying click, a history tape that remembers everything, and quests for the number-curious.</p>
+    <div class="try">▼ TRY THE MOCK BELOW — IT REALLY CALCULATES ▼</div>
+  </header>
+
+  <section class="calc-zone">
+    <div class="calc">
+      <div class="display">
+        <div class="expr" id="expr">&nbsp;</div>
+        <div class="val" id="val">0</div>
+      </div>
+      <div class="keys">
+        <button class="clr" data-k="C">C</button>
+        <button data-k="±">±</button>
+        <button data-k="%">%</button>
+        <button class="op" data-k="/">÷</button>
+        <button data-k="7">7</button>
+        <button data-k="8">8</button>
+        <button data-k="9">9</button>
+        <button class="op" data-k="*">×</button>
+        <button data-k="4">4</button>
+        <button data-k="5">5</button>
+        <button data-k="6">6</button>
+        <button class="op" data-k="-">−</button>
+        <button data-k="1">1</button>
+        <button data-k="2">2</button>
+        <button data-k="3">3</button>
+        <button class="op" data-k="+">+</button>
+        <button class="wide" data-k="0">0</button>
+        <button data-k=".">.</button>
+        <button class="eq" data-k="=">=</button>
+      </div>
+    </div>
+
+    <div class="tape">
+      <h3>📜 HISTORY TAPE</h3>
+      <ul id="tape"><li class="empty">Nothing yet. Do some math.</li></ul>
+      <div class="quest">
+        <b>QUEST: FIVE A DAY</b><br>
+        Solve 5 calculations to earn your daily +25 XP.
+        <div class="bar"><i id="questbar"></i></div>
+        <span id="questtext">0 / 5 solved</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="feat"><h3>🧮 CHUNKY KEYS</h3><p>Big pixel buttons with a satisfying press. Built for thumbs, not spreadsheets.</p></div>
+    <div class="feat"><h3>📜 HISTORY TAPE</h3><p>Every calculation saved, searchable, and synced across the 128bit family feed.</p></div>
+    <div class="feat"><h3>🎮 QUESTS</h3><p>Daily math quests feed XP into 128bitlife. Five calculations a day keeps the streak alive.</p></div>
+    <div class="feat"><h3>📱 WIDGET</h3><p>A live calculator widget for the bitlauncher home screen — math one tap away.</p></div>
+  </section>
+
+  <section class="waitlist">
+    <h2>JOIN THE WAITLIST</h2>
+    <form id="waitlistForm">
+      <input type="email" placeholder="you@email.com" required>
+      <button type="submit">SIGN ME UP</button>
+    </form>
+    <p class="note" id="waitlistNote">Be first to know when 128bitcalculator launches.</p>
+  </section>
+
+  <footer>128bitcalculator — a 128bit family app · Built with pixels, not promises.</footer>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+  let cur = '', prev = null, op = null, fresh = true, solved = 0;
+  const valEl = document.getElementById('val'), exprEl = document.getElementById('expr'),
+        tapeEl = document.getElementById('tape'), toastEl = document.getElementById('toast'),
+        barEl = document.getElementById('questbar'), qtext = document.getElementById('questtext');
+  let toastTimer;
+  function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(()=>toastEl.classList.remove('show'), 2200); }
+  function render(){ valEl.textContent = cur === '' ? (fresh && prev !== null ? prev : '0') : cur; exprEl.innerHTML = (prev !== null && op) ? (prev + ' ' + op) : '&nbsp;'; }
+  function calc(a, b, o){ a = parseFloat(a); b = parseFloat(b); switch(o){ case '+': return a+b; case '-': return a-b; case '*': return a*b; case '/': return b === 0 ? NaN : a/b; } return b; }
+  function fmt(n){ if (isNaN(n)) return 'ERR'; const r = Math.round(n * 1e10) / 1e10; return String(r); }
+  function pushTape(line){ const empty = tapeEl.querySelector('.empty'); if (empty) empty.remove(); const li = document.createElement('li'); li.innerHTML = line; tapeEl.prepend(li); while (tapeEl.children.length > 6) tapeEl.lastChild.remove(); }
+  document.querySelectorAll('.keys button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const k = btn.dataset.k;
+      if (k === 'C'){ cur = ''; prev = null; op = null; fresh = true; render(); return; }
+      if (k === '±'){ if (cur) cur = String(-parseFloat(cur)); render(); return; }
+      if (k === '%'){ if (cur) cur = String(parseFloat(cur) / 100); render(); return; }
+      if (k === '='){
+        if (prev !== null && op && cur !== ''){ const res = fmt(calc(prev, cur, op)); pushTape(prev + ' ' + op + ' ' + cur + ' = <b>' + res + '</b>'); solved++; barEl.style.width = Math.min(solved / 5 * 100, 100) + '%'; qtext.textContent = Math.min(solved, 5) + ' / 5 solved'; if (solved === 5) toast('QUEST COMPLETE! +25 XP'); else toast('+' + 5 + ' XP'); prev = null; op = null; cur = res; fresh = true; render(); }
+        return;
+      }
+      if (['+','-','*','/'].includes(k)){
+        if (prev !== null && op && cur !== ''){ const res = fmt(calc(prev, cur, op)); prev = res; } else if (cur !== '') { prev = cur; }
+        op = k; cur = ''; fresh = false; render(); return;
+      }
+      if (k === '.'){ if (!cur.includes('.')) cur = cur === '' ? '0.' : cur + '.'; render(); return; }
+      cur = fresh ? k : cur + k; fresh = false; render();
+    });
+  });
+  document.getElementById('waitlistForm').addEventListener('submit', e => { e.preventDefault(); document.getElementById('waitlistNote').textContent = 'You are on the list. +10 XP for joining early.'; toast('+10 XP — WAITLIST JOINED'); e.target.reset(); });
+  render();
+</script>
+</body>
+</html>
