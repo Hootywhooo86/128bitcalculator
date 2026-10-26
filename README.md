@@ -22,7 +22,19 @@ The mock on the landing page is a real working calculator: basic arithmetic, ±,
 - **Quests:** how deep does the gamification go — daily streaks, difficulty tiers, kid mode for the family?
 - **Platform:** iOS/Android/both, and is this a native build or a web app wrapped for stores?
 
+## The app (`app/`)
+
+A TI-83-style calculator that runs in any browser and installs to the home screen (PWA, works offline). Live at https://hootywhooo86.github.io/128bitcalculator/app/
+
+- **CALC**: expression entry on a green LCD with a scrolling history (tap an answer to reuse it), `Ans`, 2ND functions (inverse trig, eˣ, 10ˣ, ³√, ⁿ√, nCr, nPr, abs, rand), x², ^, √, !, %, EE, DEG/RAD, implicit multiplication (`2π`, `3(4+1)`). Keyboard works too. Uses its own parser (no `eval`).
+- **GRAPH**: Y1–Y4, pixel plotting, drag to TRACE, window settings, ZStandard/ZTrig/zoom, and a TABLE view.
+- **CONVERT**: cooking volumes (US/metric/UK cups, tbsp, tsp, fl oz, pinch…), baking by weight (cups of flour/sugar/butter… ↔ grams, per-ingredient densities), distance, weight, temperature (incl. gas mark), speed & running pace, area, volume, time, fuel economy, data, energy, pressure, angle. Plus a **recipe scaler** that rescales a whole ingredient list and rounds to kitchen fractions (¼, ⅓, ½…).
+- **STAT**: 1-Var Stats (mean, sum, n, median, Sx, σx, min/max, Q1/Q3, Σx², mode) and quick tip / split / percent-off math.
+- Five a Day quest: +25 XP after 5 solved calculations a day.
+
+Everything is saved on the device (localStorage).
+
 ## Status
 
-- Landing page + mock: live (coming-soon).
-- Real app build: not started. Formspree ID still needed in the waitlist form (`YOUR_FORM_ID` placeholder with a local-confirm fallback).
+- Landing page: live, links to the app.
+- App: v1 working (`app/index.html`). Formspree ID still needed in the landing waitlist form (`YOUR_FORM_ID`).

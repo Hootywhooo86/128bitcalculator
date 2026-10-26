@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b16">
+<title>128bitcalculator</title>
+<meta name="description" content="A pixel graphing calculator: scientific math, graphing, stats, and conversions for cooking, distance, weight, temperature and more.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0b16;
+    --panel:#141428;
+    --line:#2a2a4a;
+    --key:#1f1f3a;
+    --orange:#ff9f1c;
+    --orange-deep:#a05e00;
+    --teal:#2dd4bf;
+    --blue:#38bdf8;
+    --red:#ff5d5d;
+    --lcd:#b8c99a;
+    --lcd-ink:#1e2a12;
+    --ink:#f4f1ff;
+    --muted:#9a97b8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:radial-gradient(rgba(255,159,28,.07) 1px,transparent 1px);background-size:22px 22px}
+  .px{font-family:'Press Start 2P',monospace}
+  .app{max-width:480px;margin:0 auto;padding:12px 12px 24px;position:relative}
+  header{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 12px}
+  .logo{display:flex;align-items:center;gap:10px;font-family:'Press Start 2P',monospace;font-size:12px}
+  .logo i{width:26px;height:26px;background:var(--orange);display:grid;place-items:center;font-style:normal;font-size:13px;box-shadow:0 3px 0 var(--orange-deep)}
+  .mode{font-family:'Press Start 2P',monospace;font-size:9px;background:var(--key);color:var(--teal);border:none;padding:8px 10px;box-shadow:0 3px 0 #000;cursor:pointer}
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+  .tabs button{font-family:'Press Start 2P',monospace;font-size:9px;padding:11px 0;background:var(--panel);color:var(--muted);border:3px solid var(--line);cursor:pointer}
+  .tabs button.on{background:var(--orange);color:var(--bg);border-color:var(--orange-deep)}
+  .view{display:none}.view.on{display:block}
+  .card{background:var(--panel);border:3px solid var(--line);padding:12px;box-shadow:6px 6px 0 #000;margin-bottom:14px}
+  /* LCD */
+  .lcd{background:var(--lcd);color:var(--lcd-ink);border:4px solid #0b0b16;box-shadow:inset 0 0 0 3px #95a67a;padding:10px;height:190px;overflow-y:auto;font-family:'Press Start 2P',monospace;font-size:11px;line-height:1.7;image-rendering:pixelated}
+  .lcd .row{display:flex;flex-direction:column}
+  .lcd .q{word-break:break-all}
+  .lcd .a{text-align:right;word-break:break-all;cursor:pointer}
+  .lcd .entry{word-break:break-all;min-height:18px}
+  .lcd .cursor{display:inline-block;width:8px;height:12px;background:var(--lcd-ink);vertical-align:-1px;animation:blink 1s steps(1) infinite}
+  .lcd .err{color:#7a1010}
+  .status{display:flex;justify-content:space-between;font-family:'Press Start 2P',monospace;font-size:8px;color:var(--muted);padding:8px 2px 0}
+  .status b{color:var(--orange)}
+  @keyframes blink{50%{opacity:0}}
+  .keys{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:12px}
+  .keys button{font-family:'Press Start 2P',monospace;font-size:10px;padding:13px 0;background:var(--key);color:var(--ink);border:none;cursor:pointer;box-shadow:0 4px 0 #000;position:relative;user-select:none}
+  .keys button:active{transform:translateY(3px);box-shadow:0 1px 0 #000}
+  .keys button small{position:absolute;top:2px;left:0;right:0;font-size:6px;color:var(--blue);display:none}
+  .keys.shift button small{display:block}
+  .keys button.fn{background:#2a2a4a;color:var(--teal);font-size:9px}
+  .keys button.op{background:#2a2a4a;color:var(--orange)}
+  .keys button.num{background:#d7d3ea;color:#0b0b16}
+  .keys button.eq{background:var(--orange);color:var(--bg);box-shadow:0 4px 0 var(--orange-deep)}
+  .keys button.clr{color:var(--red)}
+  .keys button.sec{background:var(--blue);color:var(--bg);box-shadow:0 4px 0 #0369a1}
+  .keys.shift button.sec{outline:3px solid var(--ink)}
+  /* graph */
+  .fxrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .fxrow label{font-family:'Press Start 2P',monospace;font-size:9px;width:34px}
+  .fxrow input[type=text]{flex:1}
+  .fxrow input[type=checkbox]{width:18px;height:18px;accent-color:var(--orange)}
+  input,select{background:var(--bg);border:3px solid var(--line);color:var(--ink);font-size:15px;padding:9px 10px;font-family:'Inter',sans-serif;width:100%;border-radius:0}
+  input:focus,select:focus{outline:none;border-color:var(--orange)}
+  canvas{display:block;width:100%;background:var(--lcd);border:4px solid #0b0b16;image-rendering:pixelated;touch-action:none}
+  .win{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+  .win label{font-size:10px;color:var(--muted);display:block;margin-bottom:3px;font-family:'Press Start 2P',monospace}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .btn{font-family:'Press Start 2P',monospace;font-size:9px;padding:11px 12px;background:var(--key);color:var(--ink);border:none;box-shadow:0 4px 0 #000;cursor:pointer}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #000}
+  .btn.go{background:var(--orange);color:var(--bg);box-shadow:0 4px 0 var(--orange-deep)}
+  .trace{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--teal);margin-top:10px;min-height:14px;line-height:1.6}
+  /* convert */
+  .cats{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:10px;scrollbar-width:none}
+  .cats button{flex:0 0 auto;font-family:'Press Start 2P',monospace;font-size:8px;padding:10px;background:var(--key);color:var(--muted);border:3px solid var(--line);cursor:pointer}
+  .cats button.on{color:var(--bg);background:var(--teal);border-color:#0e7490}
+  .convgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .convgrid .full{grid-column:span 2}
+  .swap{justify-self:center;grid-column:span 2}
+  .result{font-family:'Press Start 2P',monospace;font-size:16px;color:var(--orange);text-align:center;padding:16px 4px;word-break:break-all;line-height:1.5}
+  .all{list-style:none;font-size:14px;line-height:2}
+  .all li{display:flex;justify-content:space-between;border-bottom:1px dashed var(--line)}
+  .all li b{color:var(--teal);font-weight:600}
+  h3{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--teal);margin-bottom:10px;line-height:1.5}
+  .hint{font-size:12px;color:var(--muted);line-height:1.5;margin-top:8px}
+  textarea{background:var(--bg);border:3px solid var(--line);color:var(--ink);font-size:14px;padding:10px;width:100%;min-height:120px;font-family:'Inter',sans-serif;resize:vertical}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:14px}
+  .stats div{background:var(--bg);padding:8px;border:2px solid var(--line)}
+  .stats span{display:block;font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted);margin-bottom:5px}
+  .stats b{color:var(--orange)}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:var(--orange);color:var(--bg);font-family:'Press Start 2P',monospace;font-size:10px;padding:12px 16px;box-shadow:0 4px 0 var(--orange-deep);transition:transform .25s;z-index:10}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo"><i>🧮</i>128BITCALC</div>
+    <button class="mode" id="angleBtn" title="Angle mode">DEG</button>
+  </header>
+
+  <nav class="tabs">
+    <button data-v="calc" class="on">CALC</button>
+    <button data-v="graph">GRAPH</button>
+    <button data-v="conv">CONVERT</button>
+    <button data-v="stat">STAT</button>
+  </nav>
+
+  <!-- ============ CALC ============ -->
+  <section class="view on" id="v-calc">
+    <div class="card">
+      <div class="lcd" id="lcd"></div>
+      <div class="status"><span id="stShift">&nbsp;</span><span>ANS <b id="stAns">0</b></span></div>
+      <div class="keys" id="keys"></div>
+    </div>
+    <p class="hint">Type with your keyboard too. Tap a past answer to reuse it. 2ND unlocks the blue functions (inverse trig, eˣ, 10ˣ, ³√, nCr, nPr…). Implicit multiply works: <b>2π</b>, <b>3(4+1)</b>, <b>2sin(30)</b>.</p>
+  </section>
+
+  <!-- ============ GRAPH ============ -->
+  <section class="view" id="v-graph">
+    <div class="card">
+      <h3>Y= FUNCTIONS</h3>
+      <div id="fxlist"></div>
+      <canvas id="plot" width="456" height="320"></canvas>
+      <div class="trace" id="trace">Drag or tap the graph to TRACE.</div>
+      <div class="win">
+        <div><label>XMIN</label><input id="xmin" type="number" value="-10"></div>
+        <div><label>XMAX</label><input id="xmax" type="number" value="10"></div>
+        <div><label>YMIN</label><input id="ymin" type="number" value="-10"></div>
+        <div><label>YMAX</label><input id="ymax" type="number" value="10"></div>
+      </div>
+      <div class="btnrow">
+        <button class="btn go" id="gDraw">GRAPH</button>
+        <button class="btn" id="gStd">ZSTANDARD</button>
+        <button class="btn" id="gTrig">ZTRIG</button>
+        <button class="btn" id="gIn">ZOOM IN</button>
+        <button class="btn" id="gOut">ZOOM OUT</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>TABLE</h3>
+      <div class="win" style="grid-template-columns:1fr 1fr;margin-top:0">
+        <div><label>TBLSTART</label><input id="tStart" type="number" value="-3"></div>
+        <div><label>ΔTBL</label><input id="tStep" type="number" value="1"></div>
+      </div>
+      <div id="table" style="margin-top:10px;overflow-x:auto"></div>
+    </div>
+  </section>
+
+  <!-- ============ CONVERT ============ -->
+  <section class="view" id="v-conv">
+    <div class="card">
+      <div class="cats" id="cats"></div>
+      <div class="convgrid">
+        <div class="full"><input id="cIn" type="text" inputmode="decimal" value="1" aria-label="Amount"></div>
+        <div><select id="cFrom" aria-label="From unit"></select></div>
+        <div><select id="cTo" aria-label="To unit"></select></div>
+        <button class="btn swap" id="cSwap">⇅ SWAP</button>
+      </div>
+      <div class="result" id="cOut">—</div>
+      <ul class="all" id="cAll"></ul>
+      <p class="hint" id="cHint"></p>
+    </div>
+    <div class="card">
+      <h3>🍳 RECIPE SCALER</h3>
+      <div class="convgrid">
+        <div><label class="px" style="font-size:8px;color:var(--muted)">SERVES NOW</label><input id="rFrom" type="number" value="4" min="1"></div>
+        <div><label class="px" style="font-size:8px;color:var(--muted)">SERVES WANTED</label><input id="rTo" type="number" value="6" min="1"></div>
+      </div>
+      <textarea id="rIn" style="margin-top:10px" placeholder="One ingredient per line, e.g.&#10;2 cups flour&#10;1 1/2 tsp salt&#10;3/4 cup sugar&#10;2 eggs"></textarea>
+      <ul class="all" id="rOut" style="margin-top:10px"></ul>
+    </div>
+  </section>
+
+  <!-- ============ STAT ============ -->
+  <section class="view" id="v-stat">
+    <div class="card">
+      <h3>L1 — ENTER NUMBERS</h3>
+      <textarea id="sIn" placeholder="Separate with commas, spaces or new lines&#10;e.g. 4, 8, 15, 16, 23, 42"></textarea>
+      <div class="stats" id="sOut" style="margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <h3>QUICK MATH</h3>
+      <div class="convgrid">
+        <div><label class="px" style="font-size:8px;color:var(--muted)">BILL $</label><input id="tipBill" type="number" value="50"></div>
+        <div><label class="px" style="font-size:8px;color:var(--muted)">TIP %</label><input id="tipPct" type="number" value="20"></div>
+        <div><label class="px" style="font-size:8px;color:var(--muted)">PEOPLE</label><input id="tipPpl" type="number" value="2" min="1"></div>
+        <div><label class="px" style="font-size:8px;color:var(--muted)">PERCENT OF</label><input id="pctOf" type="number" value="15"></div>
+      </div>
+      <ul class="all" id="tipOut" style="margin-top:10px"></ul>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= Utilities ================= */
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d){ try { const v = localStorage.getItem('128calc.' + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v){ try { localStorage.setItem('128calc.' + k, JSON.stringify(v)); } catch {} }
+};
+let toastTimer;
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1800); }
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function fmt(n){
+  if (typeof n !== 'number' || !isFinite(n)) return isNaN(n) ? 'ERR:DOMAIN' : (n > 0 ? '∞' : '-∞');
+  if (n === 0) return '0';
+  const a = Math.abs(n);
+  if (a >= 1e12 || a < 1e-9) return n.toExponential(8).replace(/\.?0+e/, 'e').replace('e+', 'E').replace('e', 'E');
+  return String(parseFloat(n.toPrecision(12)));
+}
+
+/* ================= Expression engine ================= */
+// Recursive-descent parser: no eval. Supports + - * / ^ ! %, implicit multiplication,
+// functions, constants, Ans and variable x.
+let angle = store.get('angle', 'DEG');
+const toRad = v => angle === 'DEG' ? v * Math.PI / 180 : v;
+const fromRad = v => angle === 'DEG' ? v * 180 / Math.PI : v;
+function fact(n){
+  if (n < 0 || !Number.isInteger(n)) return gamma(n + 1);
+  if (n > 170) return Infinity;
+  let r = 1; for (let i = 2; i <= n; i++) r *= i; return r;
+}
+function gamma(z){ // Lanczos
+  if (z < 0.5) return Math.PI / (Math.sin(Math.PI * z) * gamma(1 - z));
+  z -= 1; const g = 7, c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+  let x = c[0]; for (let i = 1; i < g + 2; i++) x += c[i] / (z + i);
+  const t = z + g + 0.5; return Math.sqrt(2 * Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
+}
+const FUNCS = {
+  sin: x => Math.sin(toRad(x)), cos: x => Math.cos(toRad(x)), tan: x => Math.tan(toRad(x)),
+  asin: x => fromRad(Math.asin(x)), acos: x => fromRad(Math.acos(x)), atan: x => fromRad(Math.atan(x)),
+  sinh: Math.sinh, cosh: Math.cosh, tanh: Math.tanh,
+  ln: Math.log, log: Math.log10, sqrt: Math.sqrt, cbrt: Math.cbrt, abs: Math.abs,
+  exp: Math.exp, round: Math.round, floor: Math.floor, ceil: Math.ceil, int: Math.trunc,
+  ncr: (n, r) => fact(n) / (fact(r) * fact(n - r)), npr: (n, r) => fact(n) / fact(n - r),
+  min: Math.min, max: Math.max, logb: (x, b) => Math.log(x) / Math.log(b), root: (x, n) => n % 2 === 1 && x < 0 ? -Math.pow(-x, 1 / n) : Math.pow(x, 1 / n),
+  rand: () => Math.random()
+};
+const CONSTS = { pi: Math.PI, 'π': Math.PI, e: Math.E };
+
+function tokenize(src){
+  src = src.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-').replace(/√/g, 'sqrt').replace(/²/g, '^2').replace(/³/g, '^3').replace(/⁻¹/g, '^-1').replace(/ᴇ/g, 'E');
+  const toks = []; let i = 0;
+  while (i < src.length){
+    const c = src[i];
+    if (/\s/.test(c)){ i++; continue; }
+    if (/[0-9.]/.test(c)){
+      let j = i; while (j < src.length && /[0-9.]/.test(src[j])) j++;
+      if (src[j] === 'E' && /[-+0-9]/.test(src[j + 1] || '')){ j++; if (/[-+]/.test(src[j])) j++; while (j < src.length && /[0-9]/.test(src[j])) j++; }
+      const num = src.slice(i, j);
+      if ((num.match(/\./g) || []).length > 1) throw new Error('SYNTAX');
+      toks.push({ t: 'num', v: parseFloat(num) }); i = j; continue;
+    }
+    if (/[a-zA-Zπ]/.test(c)){
+      let j = i; while (j < src.length && /[a-zA-Zπ]/.test(src[j])) j++;
+      let word = src.slice(i, j).toLowerCase();
+      // split runs like "pix" or "2xpi" into known pieces
+      while (word.length){
+        let hit = ['asin','acos','atan','sinh','cosh','tanh','sqrt','cbrt','round','floor','ceil','logb','root','rand','ncr','npr','sin','cos','tan','abs','exp','int','min','max','log','ln','ans','pi','π','e','x'].find(w => word.startsWith(w));
+        if (!hit) throw new Error('UNDEFINED');
+        toks.push(FUNCS[hit] ? { t: 'fn', v: hit } : { t: 'id', v: hit });
+        word = word.slice(hit.length);
+      }
+      i = j; continue;
+    }
+    if ('+-*/^()!%,'.includes(c)){ toks.push({ t: 'op', v: c }); i++; continue; }
+    throw new Error('SYNTAX');
+  }
+  // implicit multiplication
+  const out = [];
+  for (let k = 0; k < toks.length; k++){
+    const a = out[out.length - 1], b = toks[k];
+    const aEnds = a && (a.t === 'num' || a.t === 'id' || (a.t === 'op' && (a.v === ')' || a.v === '!' || a.v === '%')));
+    const bStarts = b.t === 'num' || b.t === 'id' || b.t === 'fn' || (b.t === 'op' && b.v === '(');
+    if (aEnds && bStarts) out.push({ t: 'op', v: '*' });
+    out.push(b);
+  }
+  return out;
+}
+function parse(src){
+  const toks = tokenize(src); let p = 0;
+  const peek = () => toks[p], isOp = v => toks[p] && toks[p].t === 'op' && toks[p].v === v;
+  function expr(){ let n = term(); while (isOp('+') || isOp('-')){ const o = toks[p++].v, r = term(), l = n; n = o === '+' ? s => l(s) + r(s) : s => l(s) - r(s); } return n; }
+  function term(){ let n = unary(); while (isOp('*') || isOp('/')){ const o = toks[p++].v, r = unary(), l = n; n = o === '*' ? s => l(s) * r(s) : s => { const d = r(s); if (d === 0) throw new Error('DIVIDE BY 0'); return l(s) / d; }; } return n; }
+  function unary(){ if (isOp('-')){ p++; const n = unary(); return s => -n(s); } if (isOp('+')){ p++; return unary(); } return power(); }
+  function power(){ const b = postfix(); if (isOp('^')){ p++; const e = unary(); return s => { const x = b(s), y = e(s); if (x < 0 && !Number.isInteger(y)){ const inv = 1 / y; if (Number.isInteger(inv) && inv % 2 === 1) return -Math.pow(-x, y); } return Math.pow(x, y); }; } return b; }
+  function postfix(){ let n = atom(); while (isOp('!') || isOp('%')){ const o = toks[p++].v, a = n; n = o === '!' ? s => fact(a(s)) : s => a(s) / 100; } return n; }
+  function atom(){
+    const t = peek(); if (!t) throw new Error('SYNTAX');
+    if (t.t === 'num'){ p++; return () => t.v; }
+    if (t.t === 'id'){ p++; if (t.v === 'x') return s => s.x; if (t.v === 'ans') return s => s.ans; const c = CONSTS[t.v]; return () => c; }
+    if (t.t === 'fn'){
+      p++; const f = FUNCS[t.v];
+      if (isOp('(')){
+        p++; const args = [];
+        if (!isOp(')')){ args.push(expr()); while (isOp(',')){ p++; args.push(expr()); } }
+        if (isOp(')')) p++; // auto-close like a TI
+        return s => f(...args.map(a => a(s)));
+      }
+      const a = power(); return s => f(a(s));
+    }
+    if (isOp('(')){ p++; const n = expr(); if (isOp(')')) p++; return n; }
+    throw new Error('SYNTAX');
+  }
+  const fn = expr();
+  if (p < toks.length) throw new Error('SYNTAX');
+  return fn;
+}
+
+/* ================= CALC view ================= */
+let entry = '', caret = 0, shift = false, ans = store.get('ans', 0);
+let history = store.get('history', []);
+const KEYS = [
+  ['2ND','sec','shift'], ['MODE','fn','mode'], ['DEL','fn clr','del'], ['CLEAR','fn clr','clear'], ['←→','fn','caret'],
+  ['x²','fn','^2','x⁻¹','^-1'], ['^','fn','^','ⁿ√','root('], ['√','fn','sqrt(','³√','cbrt('], ['π','fn','π','e','e'], ['!','fn','!','%','%'],
+  ['sin','fn','sin(','sin⁻¹','asin('], ['cos','fn','cos(','cos⁻¹','acos('], ['tan','fn','tan(','tan⁻¹','atan('], ['log','fn','log(','10ˣ','10^('], ['ln','fn','ln(','eˣ','e^('],
+  ['(','op','('], [')','op',')'], [',','op',','], ['EE','fn','E','nCr','ncr('], ['÷','op','/','nPr','npr('],
+  ['7','num','7'], ['8','num','8'], ['9','num','9'], ['ANS','fn','ans','x','x'], ['×','op','*'],
+  ['4','num','4'], ['5','num','5'], ['6','num','6'], ['(-)','fn','-','abs','abs('], ['−','op','-'],
+  ['1','num','1'], ['2','num','2'], ['3','num','3'], ['STO','fn','sto','rand','rand'], ['+','op','+'],
+  ['0','num','0'], ['.','num','.'], ['ENT','eq','enter'], ['ENT','eq','enter'], ['ENT','eq','enter']
+];
+function buildKeys(){
+  const box = $('keys'); box.innerHTML = '';
+  let seen = 0;
+  KEYS.forEach(([label, cls, act, sLabel, sAct], idx) => {
+    if (act === 'enter'){ if (seen++) return; }
+    const b = document.createElement('button');
+    b.className = cls; b.innerHTML = (sLabel ? `<small>${sLabel}</small>` : '') + label;
+    if (act === 'enter') b.style.gridColumn = 'span 3';
+    b.addEventListener('click', () => press(shift && sAct ? sAct : act));
+    box.appendChild(b);
+  });
+}
+function insert(s){ entry = entry.slice(0, caret) + s + entry.slice(caret); caret += s.length; }
+function press(act){
+  const wasShift = shift; shift = false;
+  switch (act){
+    case 'shift': shift = !wasShift; break;
+    case 'mode': toggleAngle(); break;
+    case 'del': if (caret > 0){ entry = entry.slice(0, caret - 1) + entry.slice(caret); caret--; } break;
+    case 'clear': if (entry) { entry = ''; caret = 0; } else { history = []; store.set('history', history); } break;
+    case 'caret': caret = caret >= entry.length ? 0 : entry.length; break;
+    case 'enter': run(); break;
+    case 'sto': insert('ans'); break;
+    default:
+      // operator first on an empty line continues from Ans, like a TI
+      if (entry === '' && ['+','*','/','^2','^-1','^','!','%'].includes(act) && history.length) insert('ans');
+      insert(act);
+  }
+  $('keys').classList.toggle('shift', shift);
+  $('stShift').textContent = shift ? '2ND' : ' ';
+  renderLcd();
+}
+function pretty(s){ return esc(s).replace(/\*/g, '×').replace(/\//g, '÷').replace(/sqrt\(/g, '√(').replace(/ans/g, 'Ans'); }
+function run(){
+  const src = entry.trim();
+  if (!src){ if (history.length){ entry = history[history.length - 1].q; caret = entry.length; } return; }
+  let a, err = null;
+  try { a = parse(src)({ x: 0, ans }); if (typeof a !== 'number' || isNaN(a)) err = 'ERR:DOMAIN'; }
+  catch (e){ err = 'ERR:' + e.message; }
+  history.push({ q: src, a: err || fmt(a), err: !!err });
+  if (history.length > 60) history.shift();
+  if (!err){ ans = a; store.set('ans', ans); }
+  store.set('history', history);
+  entry = ''; caret = 0;
+  const solved = store.get('solved.' + new Date().toDateString(), 0) + (err ? 0 : 1);
+  store.set('solved.' + new Date().toDateString(), solved);
+  if (solved === 5 && !err) toast('QUEST: FIVE A DAY ✔ +25 XP');
+}
+function renderLcd(){
+  const lcd = $('lcd');
+  lcd.innerHTML = history.map((h, i) => `<div class="row"><span class="q">${pretty(h.q)}</span><span class="a ${h.err ? 'err' : ''}" data-i="${i}">${esc(h.a)}</span></div>`).join('')
+    + `<div class="entry">${pretty(entry.slice(0, caret))}<span class="cursor"></span>${pretty(entry.slice(caret))}</div>`;
+  lcd.scrollTop = lcd.scrollHeight;
+  $('stAns').textContent = fmt(ans);
+}
+$('lcd').addEventListener('click', e => {
+  const a = e.target.closest('.a'); if (!a) return;
+  const h = history[+a.dataset.i]; if (h.err) { entry = h.q; caret = entry.length; } else insert(h.a.replace('E', 'E'));
+  renderLcd();
+});
+function toggleAngle(){ angle = angle === 'DEG' ? 'RAD' : 'DEG'; store.set('angle', angle); $('angleBtn').textContent = angle; toast(angle + ' MODE'); if ($('v-graph').classList.contains('on')) drawGraph(); }
+$('angleBtn').textContent = angle;
+$('angleBtn').addEventListener('click', toggleAngle);
+document.addEventListener('keydown', e => {
+  if (!$('v-calc').classList.contains('on')) return;
+  if (e.target.matches('input,textarea,select')) return;
+  if (e.metaKey || e.ctrlKey) return;
+  const k = e.key;
+  if (k === 'Enter' || k === '='){ e.preventDefault(); press('enter'); }
+  else if (k === 'Backspace'){ e.preventDefault(); press('del'); }
+  else if (k === 'Escape'){ press('clear'); }
+  else if (k === 'ArrowLeft'){ caret = Math.max(0, caret - 1); renderLcd(); }
+  else if (k === 'ArrowRight'){ caret = Math.min(entry.length, caret + 1); renderLcd(); }
+  else if (k === 'ArrowUp'){ if (history.length){ entry = history[history.length - 1].q; caret = entry.length; renderLcd(); } }
+  else if (k.length === 1 && /[0-9a-zA-Z.+\-*/^()!%,π ]/.test(k)){ e.preventDefault(); insert(k); renderLcd(); }
+});
+buildKeys(); renderLcd();
+
+/* ================= GRAPH view ================= */
+const COLORS = ['#1e2a12', '#b4231f', '#1d4ed8', '#7c3aed'];
+let fx = store.get('fx', [{ e: 'sin(x)', on: true }, { e: 'x^2/4-3', on: true }, { e: '', on: true }, { e: '', on: true }]);
+function buildFx(){
+  $('fxlist').innerHTML = fx.map((f, i) => `<div class="fxrow"><label style="color:${['#ff9f1c','#ff5d5d','#38bdf8','#a78bfa'][i]}">Y${i + 1}=</label><input type="text" data-i="${i}" value="${esc(f.e)}" placeholder="e.g. 2x+1" autocapitalize="off" autocomplete="off" spellcheck="false"><input type="checkbox" data-c="${i}" ${f.on ? 'checked' : ''} aria-label="Show Y${i + 1}"></div>`).join('');
+  $('fxlist').querySelectorAll('input[type=text]').forEach(inp => inp.addEventListener('input', () => { fx[inp.dataset.i].e = inp.value; store.set('fx', fx); drawGraph(); }));
+  $('fxlist').querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', () => { fx[cb.dataset.c].on = cb.checked; store.set('fx', fx); drawGraph(); }));
+}
+const W = () => ({ xmin: +$('xmin').value, xmax: +$('xmax').value, ymin: +$('ymin').value, ymax: +$('ymax').value });
+let traceX = null;
+function compiled(){ return fx.map(f => { if (!f.on || !f.e.trim()) return null; try { return parse(f.e); } catch { return 'err'; } }); }
+function niceStep(range){ const raw = range / 10, mag = Math.pow(10, Math.floor(Math.log10(raw))); const n = raw / mag; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * mag; }
+function drawGraph(){
+  const cv = $('plot'), ctx = cv.getContext('2d'), w = cv.width, h = cv.height, win = W();
+  if (!(win.xmax > win.xmin && win.ymax > win.ymin)) return;
+  const sx = x => (x - win.xmin) / (win.xmax - win.xmin) * w, sy = y => h - (y - win.ymin) / (win.ymax - win.ymin) * h;
+  ctx.fillStyle = '#b8c99a'; ctx.fillRect(0, 0, w, h);
+  // grid
+  ctx.fillStyle = 'rgba(30,42,18,.25)';
+  const xs = niceStep(win.xmax - win.xmin), ys = niceStep(win.ymax - win.ymin);
+  for (let gx = Math.ceil(win.xmin / xs) * xs; gx <= win.xmax; gx += xs) for (let gy = Math.ceil(win.ymin / ys) * ys; gy <= win.ymax; gy += ys) ctx.fillRect(Math.round(sx(gx)) - 1, Math.round(sy(gy)) - 1, 2, 2);
+  // axes
+  ctx.fillStyle = '#1e2a12';
+  if (win.ymin <= 0 && win.ymax >= 0) ctx.fillRect(0, Math.round(sy(0)) - 1, w, 2);
+  if (win.xmin <= 0 && win.xmax >= 0) ctx.fillRect(Math.round(sx(0)) - 1, 0, 2, h);
+  ctx.font = '9px "Press Start 2P", monospace';
+  ctx.fillText(fmt(win.xmax), w - ctx.measureText(fmt(win.xmax)).width - 3, Math.min(h - 4, Math.max(12, sy(0) - 5)));
+  ctx.fillText(fmt(win.ymax), Math.min(w - 50, Math.max(4, sx(0) + 5)), 12);
+  // curves: chunky 2px "pixels"
+  const fns = compiled();
+  fns.forEach((f, i) => {
+    if (!f || f === 'err') return;
+    ctx.fillStyle = COLORS[i];
+    let prev = null;
+    for (let px = 0; px <= w; px += 1){
+      const x = win.xmin + px / w * (win.xmax - win.xmin);
+      let y; try { y = f({ x, ans }); } catch { y = NaN; }
+      if (!isFinite(y)) { prev = null; continue; }
+      const py = sy(y);
+      if (prev !== null && Math.abs(py - prev) < h){
+        const lo = Math.min(py, prev), hi = Math.max(py, prev);
+        ctx.fillRect(px - 1, Math.max(-2, lo) - 1, 2, Math.min(h + 2, hi) - Math.max(-2, lo) + 2);
+      } else ctx.fillRect(px - 1, py - 1, 2, 2);
+      prev = py;
+    }
+  });
+  // trace
+  if (traceX !== null){
+    const parts = [];
+    fns.forEach((f, i) => {
+      if (!f || f === 'err') { if (f === 'err') parts.push(`Y${i + 1}: ERR`); return; }
+      let y; try { y = f({ x: traceX, ans }); } catch { y = NaN; }
+      parts.push(`Y${i + 1}=${fmt(y)}`);
+      if (isFinite(y)){ ctx.fillStyle = COLORS[i]; ctx.fillRect(sx(traceX) - 4, sy(y) - 4, 8, 8); ctx.fillStyle = '#b8c99a'; ctx.fillRect(sx(traceX) - 2, sy(y) - 2, 4, 4); }
+    });
+    $('trace').textContent = `X=${fmt(traceX)}  ` + parts.join('  ');
+  } else {
+    const errs = fns.map((f, i) => f === 'err' ? `Y${i + 1}: ERR:SYNTAX` : null).filter(Boolean);
+    $('trace').textContent = errs.length ? errs.join('  ') : 'Drag or tap the graph to TRACE.';
+  }
+  drawTable(fns);
+}
+function drawTable(fns){
+  const start = +$('tStart').value || 0, step = +$('tStep').value || 1, cols = fns.map((f, i) => f && f !== 'err' ? i : -1).filter(i => i >= 0);
+  let html = '<table style="width:100%;border-collapse:collapse;font-size:13px"><tr><th style="text-align:left;padding:4px;color:var(--orange)">X</th>' + cols.map(i => `<th style="text-align:right;padding:4px;color:var(--teal)">Y${i + 1}</th>`).join('') + '</tr>';
+  for (let r = 0; r < 8; r++){
+    const x = start + r * step;
+    html += `<tr style="border-top:1px dashed var(--line)"><td style="padding:4px">${fmt(x)}</td>` + cols.map(i => { let y; try { y = fns[i]({ x, ans }); } catch { y = NaN; } return `<td style="text-align:right;padding:4px">${nice(y)}</td>`; }).join('') + '</tr>';
+  }
+  $('table').innerHTML = html + '</table>';
+}
+function setWin(a, b, c, d){ $('xmin').value = a; $('xmax').value = b; $('ymin').value = c; $('ymax').value = d; traceX = null; drawGraph(); }
+function zoom(f){ const w = W(), cx = (w.xmin + w.xmax) / 2, cy = (w.ymin + w.ymax) / 2, rx = (w.xmax - w.xmin) / 2 * f, ry = (w.ymax - w.ymin) / 2 * f; setWin(+(cx - rx).toPrecision(6), +(cx + rx).toPrecision(6), +(cy - ry).toPrecision(6), +(cy + ry).toPrecision(6)); }
+$('gDraw').onclick = () => { traceX = null; drawGraph(); };
+$('gStd').onclick = () => setWin(-10, 10, -10, 10);
+$('gTrig').onclick = () => angle === 'DEG' ? setWin(-360, 360, -4, 4) : setWin(-6.152285613, 6.152285613, -4, 4);
+$('gIn').onclick = () => zoom(0.5); $('gOut').onclick = () => zoom(2);
+['xmin','xmax','ymin','ymax','tStart','tStep'].forEach(id => $(id).addEventListener('input', drawGraph));
+function traceAt(e){ const cv = $('plot'), r = cv.getBoundingClientRect(), w = W(); traceX = +(w.xmin + (e.clientX - r.left) / r.width * (w.xmax - w.xmin)).toPrecision(5); drawGraph(); }
+let dragging = false;
+$('plot').addEventListener('pointerdown', e => { dragging = true; $('plot').setPointerCapture(e.pointerId); traceAt(e); });
+$('plot').addEventListener('pointermove', e => { if (dragging) traceAt(e); });
+$('plot').addEventListener('pointerup', () => dragging = false);
+buildFx();
+
+/* ================= CONVERT view ================= */
+// Each unit: factor to the category's base unit. Temperature uses functions.
+const UNITS = {
+  '🍳 Cooking': { base: 'ml', units: {
+    'tsp (US)': 4.92892, 'tbsp (US)': 14.7868, 'fl oz (US)': 29.5735, 'cup (US)': 236.588, 'pint (US)': 473.176, 'quart (US)': 946.353, 'gallon (US)': 3785.41,
+    'ml': 1, 'liter': 1000, 'cup (metric)': 250, 'tbsp (metric)': 15, 'tsp (metric)': 5, 'cup (UK)': 284.131, 'fl oz (UK)': 28.4131, 'pint (UK)': 568.261,
+    'pinch': 0.308, 'dash': 0.616, 'stick butter (vol)': 118.294
+  }, hint: 'Volume measures. For flour, sugar or butter by weight, use the 🧈 Baking tab.' },
+  '🧈 Baking': { base: 'g', ingredient: true, units: { 'gram': 1, 'kilogram': 1000, 'ounce': 28.3495, 'pound': 453.592, 'cup': 'cup', 'tbsp': 'tbsp', 'tsp': 'tsp', 'stick (butter)': 113.4 },
+    densities: { 'All-purpose flour': 125, 'Bread flour': 127, 'Whole wheat flour': 120, 'Granulated sugar': 200, 'Brown sugar (packed)': 220, 'Powdered sugar': 120, 'Butter': 227, 'Milk': 245, 'Water': 237, 'Honey': 340, 'Oil': 218, 'Rolled oats': 90, 'Cocoa powder': 85, 'Rice (uncooked)': 185, 'Salt (table)': 292, 'Chocolate chips': 170 },
+    hint: 'Grams per US cup vary by ingredient — pick one above. Values are typical spooned-and-leveled weights.' },
+  '📏 Distance': { base: 'm', units: { 'millimeter': 0.001, 'centimeter': 0.01, 'meter': 1, 'kilometer': 1000, 'inch': 0.0254, 'foot': 0.3048, 'yard': 0.9144, 'mile': 1609.344, 'nautical mile': 1852, 'light-year': 9.4607e15 } },
+  '⚖️ Weight': { base: 'g', units: { 'milligram': 0.001, 'gram': 1, 'kilogram': 1000, 'metric ton': 1e6, 'ounce': 28.349523125, 'pound': 453.59237, 'stone': 6350.29318, 'US ton': 907184.74 } },
+  '🌡 Temp': { base: 'C', temp: true, units: { 'Celsius': 0, 'Fahrenheit': 0, 'Kelvin': 0, 'Gas mark': 0 } },
+  '🚗 Speed': { base: 'm/s', units: { 'm/s': 1, 'km/h': 1 / 3.6, 'mph': 0.44704, 'knot': 0.514444, 'ft/s': 0.3048, 'min/mile (pace)': 'pace', 'min/km (pace)': 'pacek' } },
+  '⬛ Area': { base: 'm²', units: { 'cm²': 1e-4, 'm²': 1, 'km²': 1e6, 'in²': 0.00064516, 'ft²': 0.09290304, 'yd²': 0.83612736, 'acre': 4046.8564224, 'hectare': 1e4, 'mi²': 2589988.110336 } },
+  '🧊 Volume': { base: 'l', units: { 'ml': 0.001, 'liter': 1, 'm³': 1000, 'in³': 0.016387064, 'ft³': 28.316846592, 'gallon (US)': 3.785411784, 'gallon (UK)': 4.54609, 'barrel (oil)': 158.987294928 } },
+  '⏱ Time': { base: 's', units: { 'second': 1, 'minute': 60, 'hour': 3600, 'day': 86400, 'week': 604800, 'month (avg)': 2629746, 'year': 31556952 } },
+  '⛽ Fuel': { base: 'km/l', units: { 'mpg (US)': 0.425144, 'mpg (UK)': 0.354006, 'km/l': 1, 'L/100km': 'inv' } },
+  '💾 Data': { base: 'B', units: { 'bit': 0.125, 'byte': 1, 'KB': 1e3, 'MB': 1e6, 'GB': 1e9, 'TB': 1e12, 'KiB': 1024, 'MiB': 1048576, 'GiB': 1073741824 } },
+  '⚡ Energy': { base: 'J', units: { 'joule': 1, 'kilojoule': 1000, 'calorie': 4.184, 'kcal (food Cal)': 4184, 'watt-hour': 3600, 'kWh': 3.6e6, 'BTU': 1055.06 } },
+  '🌀 Pressure': { base: 'Pa', units: { 'pascal': 1, 'kPa': 1000, 'bar': 1e5, 'psi': 6894.757, 'atm': 101325, 'mmHg': 133.322 } },
+  '📐 Angle': { base: 'deg', units: { 'degree': 1, 'radian': 180 / Math.PI, 'gradian': 0.9, 'turn': 360, 'arcminute': 1 / 60, 'arcsecond': 1 / 3600 } }
+};
+const DEFAULTS = { '🍳 Cooking': ['cup (US)', 'ml'], '🧈 Baking': ['cup', 'gram'], '📏 Distance': ['mile', 'kilometer'], '⚖️ Weight': ['pound', 'kilogram'], '🌡 Temp': ['Fahrenheit', 'Celsius'], '🚗 Speed': ['mph', 'km/h'], '⛽ Fuel': ['mpg (US)', 'L/100km'] };
+let cat = store.get('cat', '🍳 Cooking'); if (!UNITS[cat]) cat = '🍳 Cooking';
+let ingredient = store.get('ingredient', 'All-purpose flour');
+function tempToC(v, u){ return u === 'Celsius' ? v : u === 'Fahrenheit' ? (v - 32) * 5 / 9 : u === 'Kelvin' ? v - 273.15 : 125 + v * 13; }
+function cToTemp(c, u){ return u === 'Celsius' ? c : u === 'Fahrenheit' ? c * 9 / 5 + 32 : u === 'Kelvin' ? c + 273.15 : (c - 125) / 13; }
+function toBase(v, u, C){
+  if (C.temp) return tempToC(v, u);
+  const f = C.units[u];
+  if (f === 'inv') return 100 / v;
+  if (f === 'pace') return 1609.344 / (v * 60);
+  if (f === 'pacek') return 1000 / (v * 60);
+  if (C.ingredient && typeof f === 'string') return v * C.densities[ingredient] * { cup: 1, tbsp: 1 / 16, tsp: 1 / 48 }[f];
+  return v * f;
+}
+function fromBase(b, u, C){
+  if (C.temp) return cToTemp(b, u);
+  const f = C.units[u];
+  if (f === 'inv') return 100 / b;
+  if (f === 'pace') return 1609.344 / (b * 60);
+  if (f === 'pacek') return 1000 / (b * 60);
+  if (C.ingredient && typeof f === 'string') return b / (C.densities[ingredient] * { cup: 1, tbsp: 1 / 16, tsp: 1 / 48 }[f]);
+  return b / f;
+}
+function parseAmount(s){ // accepts "1 1/2", "3/4", "2.5", or a full expression
+  s = String(s).trim(); let m;
+  if ((m = s.match(/^(\d+)\s+(\d+)\/(\d+)$/))) return +m[1] + m[2] / m[3];
+  try { return parse(s)({ x: 0, ans }); } catch { return NaN; }
+}
+function nice(n){ if (!isFinite(n)) return '—'; const a = Math.abs(n); return a !== 0 && (a < 0.001 || a >= 1e9) ? n.toExponential(4) : String(parseFloat(n.toPrecision(6))); }
+function buildCats(){
+  $('cats').innerHTML = Object.keys(UNITS).map(c => `<button data-c="${c}" class="${c === cat ? 'on' : ''}">${c}</button>`).join('');
+  $('cats').querySelectorAll('button').forEach(b => b.onclick = () => { cat = b.dataset.c; store.set('cat', cat); buildCats(); buildUnits(); });
+}
+function buildUnits(){
+  const C = UNITS[cat], names = Object.keys(C.units), [d1, d2] = DEFAULTS[cat] || [names[0], names[1]];
+  const opt = sel => names.map(n => `<option ${n === sel ? 'selected' : ''}>${n}</option>`).join('');
+  $('cFrom').innerHTML = opt(d1); $('cTo').innerHTML = opt(d2);
+  let ing = document.getElementById('cIng');
+  if (C.ingredient){
+    if (!ing){ ing = document.createElement('select'); ing.id = 'cIng'; ing.setAttribute('aria-label', 'Ingredient'); const wrap = document.createElement('div'); wrap.className = 'full'; wrap.appendChild(ing); $('cIn').parentNode.after(wrap); ing.onchange = () => { ingredient = ing.value; store.set('ingredient', ingredient); convert(); }; }
+    ing.innerHTML = Object.keys(C.densities).map(n => `<option ${n === ingredient ? 'selected' : ''}>${n}</option>`).join('');
+    ing.parentNode.style.display = '';
+  } else if (ing) ing.parentNode.style.display = 'none';
+  $('cHint').textContent = C.hint || '';
+  convert();
+}
+function convert(){
+  const C = UNITS[cat], v = parseAmount($('cIn').value), from = $('cFrom').value, to = $('cTo').value;
+  if (!isFinite(v)){ $('cOut').textContent = '—'; $('cAll').innerHTML = ''; return; }
+  const b = toBase(v, from, C);
+  $('cOut').textContent = `${nice(v)} ${from} = ${nice(fromBase(b, to, C))} ${to}`;
+  $('cAll').innerHTML = Object.keys(C.units).filter(u => u !== from).map(u => `<li><span>${u}</span><b>${nice(fromBase(b, u, C))}</b></li>`).join('');
+}
+$('cIn').addEventListener('input', convert); $('cFrom').onchange = convert; $('cTo').onchange = convert;
+$('cSwap').onclick = () => { const a = $('cFrom').value; $('cFrom').value = $('cTo').value; $('cTo').value = a; convert(); };
+buildCats(); buildUnits();
+
+// Recipe scaler
+const FRAC = [[0, ''], [1 / 8, '⅛'], [1 / 4, '¼'], [1 / 3, '⅓'], [3 / 8, '⅜'], [1 / 2, '½'], [5 / 8, '⅝'], [2 / 3, '⅔'], [3 / 4, '¾'], [7 / 8, '⅞'], [1, '']];
+function kitchen(n){
+  const whole = Math.floor(n), rest = n - whole;
+  let best = FRAC[0]; FRAC.forEach(f => { if (Math.abs(f[0] - rest) < Math.abs(best[0] - rest)) best = f; });
+  if (Math.abs(best[0] - rest) > 0.04) return nice(n);
+  const w = best[0] === 1 ? whole + 1 : whole;
+  return (w ? w + (best[1] ? ' ' : '') : '') + best[1] || '0';
+}
+function scaleRecipe(){
+  const k = (+$('rTo').value || 1) / (+$('rFrom').value || 1);
+  store.set('recipe', $('rIn').value);
+  $('rOut').innerHTML = $('rIn').value.split('\n').filter(l => l.trim()).map(line => {
+    const m = line.trim().match(/^(\d+\s+\d+\/\d+|\d+\/\d+|\d*\.?\d+)\s*(.*)$/);
+    if (!m) return `<li><span>${esc(line)}</span><b>—</b></li>`;
+    return `<li><span>${esc(m[2])}</span><b>${kitchen(parseAmount(m[1]) * k)}</b></li>`;
+  }).join('');
+}
+$('rIn').value = store.get('recipe', '2 cups flour\n1 1/2 tsp salt\n3/4 cup sugar\n2 eggs');
+['rIn','rFrom','rTo'].forEach(id => $(id).addEventListener('input', scaleRecipe)); scaleRecipe();
+
+/* ================= STAT view ================= */
+function stats(){
+  store.set('list', $('sIn').value);
+  const xs = $('sIn').value.split(/[\s,;]+/).filter(Boolean).map(Number).filter(isFinite);
+  if (!xs.length){ $('sOut').innerHTML = '<div style="grid-column:span 2;color:var(--muted)">Enter some numbers to see 1-Var Stats.</div>'; return; }
+  const n = xs.length, sum = xs.reduce((a, b) => a + b, 0), mean = sum / n, sorted = [...xs].sort((a, b) => a - b);
+  const med = a => a.length % 2 ? a[(a.length - 1) / 2] : (a[a.length / 2 - 1] + a[a.length / 2]) / 2;
+  const ss = xs.reduce((a, b) => a + (b - mean) ** 2, 0);
+  const lower = sorted.slice(0, Math.floor(n / 2)), upper = sorted.slice(Math.ceil(n / 2));
+  const counts = {}; xs.forEach(x => counts[x] = (counts[x] || 0) + 1); const top = Math.max(...Object.values(counts));
+  const mode = top > 1 ? Object.keys(counts).filter(k => counts[k] === top).join(', ') : 'none';
+  const rows = [['x̄ MEAN', mean], ['Σx SUM', sum], ['n', n], ['MED', med(sorted)], ['Sx (SAMPLE)', n > 1 ? Math.sqrt(ss / (n - 1)) : NaN], ['σx (POP)', Math.sqrt(ss / n)], ['MINX', sorted[0]], ['MAXX', sorted[n - 1]], ['Q1', lower.length ? med(lower) : NaN], ['Q3', upper.length ? med(upper) : NaN], ['Σx²', xs.reduce((a, b) => a + b * b, 0)], ['MODE', mode]];
+  $('sOut').innerHTML = rows.map(([k, v]) => `<div><span>${k}</span><b>${typeof v === 'number' ? (isNaN(v) ? '—' : fmt(v)) : esc(v)}</b></div>`).join('');
+}
+$('sIn').value = store.get('list', '4, 8, 15, 16, 23, 42');
+$('sIn').addEventListener('input', stats); stats();
+function tips(){
+  const bill = +$('tipBill').value || 0, pct = +$('tipPct').value || 0, ppl = Math.max(1, +$('tipPpl').value || 1), tip = bill * pct / 100;
+  const pctOf = +$('pctOf').value || 0;
+  $('tipOut').innerHTML = `<li><span>Tip</span><b>$${tip.toFixed(2)}</b></li><li><span>Total</span><b>$${(bill + tip).toFixed(2)}</b></li><li><span>Each (${ppl})</span><b>$${((bill + tip) / ppl).toFixed(2)}</b></li><li><span>${pctOf}% of $${bill}</span><b>$${(bill * pctOf / 100).toFixed(2)}</b></li><li><span>$${bill} − ${pctOf}% off</span><b>$${(bill * (1 - pctOf / 100)).toFixed(2)}</b></li>`;
+}
+['tipBill','tipPct','tipPpl','pctOf'].forEach(id => $(id).addEventListener('input', tips)); tips();
+
+/* ================= Tabs ================= */
+function show(v){
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  document.querySelectorAll('.view').forEach(s => s.classList.toggle('on', s.id === 'v-' + v));
+  store.set('tab', v);
+  if (v === 'graph') drawGraph();
+}
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => show(b.dataset.v));
+show(store.get('tab', 'calc'));
+document.fonts && document.fonts.ready.then(() => { if ($('v-graph').classList.contains('on')) drawGraph(); });
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
