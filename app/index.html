@@ -45,29 +45,43 @@
   .tabs button.on span{transform:translateY(-2px)}
   .view{display:none}.view.on{display:block}
   .card{background:var(--panel);border:3px solid var(--line);padding:12px;box-shadow:6px 6px 0 #000;margin-bottom:14px}
-  /* LCD */
-  .lcd{background:var(--lcd);color:var(--lcd-ink);border:4px solid var(--bg);box-shadow:inset 0 0 0 3px var(--lcd-edge);padding:10px;height:190px;overflow-y:auto;font-family:'Press Start 2P',monospace;font-size:11px;line-height:1.7;image-rendering:pixelated}
-  .lcd .row{display:flex;flex-direction:column}
-  .lcd .q{word-break:break-all}
-  .lcd .a{text-align:right;word-break:break-all;cursor:pointer}
-  .lcd .entry{word-break:break-all;min-height:18px}
-  .lcd .cursor{display:inline-block;width:8px;height:12px;background:var(--lcd-ink);vertical-align:-1px;animation:blink 1s steps(1) infinite}
-  .lcd .err{color:#7a1010}
-  .status{display:flex;justify-content:space-between;font-family:'Press Start 2P',monospace;font-size:8px;color:var(--muted);padding:8px 2px 0}
-  .status b{color:var(--orange)}
+  /* ---------- calculator: big display + big pixel keys ---------- */
+  #v-calc{--avail:calc(100vh - 132px - var(--sat) - var(--sab));--avail:calc(100dvh - 132px - var(--sat) - var(--sab))}
+  #v-calc.on{display:flex;flex-direction:column;gap:10px;min-height:var(--avail)}
+  .screen{position:relative;flex:1 1 auto;min-height:120px;background:var(--lcd);color:var(--lcd-ink);border:4px solid var(--bg);box-shadow:inset 0 0 0 3px var(--lcd-edge),6px 6px 0 #000;padding:12px 14px 14px;display:flex;flex-direction:column;justify-content:flex-end;font-family:'Press Start 2P',monospace;overflow:hidden}
+  .sbar{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:8px;flex:0 0 auto}
+  .screen .grow{flex:1 1 auto;min-height:6px}
+  .sbar button{background:none;border:2px solid currentColor;color:var(--lcd-ink);font-family:'Press Start 2P',monospace;font-size:9px;padding:7px 8px;cursor:pointer;opacity:.85}
+  .sbar button.on{background:var(--lcd-ink);color:var(--lcd)}
+  .sbar .tags{font-size:8px;opacity:.7;display:flex;gap:8px}
+  .prevq{font-size:clamp(10px,3vw,14px);text-align:right;opacity:.55;min-height:1.5em;word-break:break-all;cursor:pointer;flex:0 0 auto}
+  .expr{font-size:var(--fs,40px);text-align:right;word-break:break-all;line-height:1.3;max-height:3.95em;overflow-y:auto;scrollbar-width:none;flex:0 1 auto;min-height:1.3em}
+  .expr .cursor{display:inline-block;width:.14em;height:1em;background:var(--lcd-ink);vertical-align:-.12em;animation:blink 1s steps(1) infinite;margin-left:2px}
+  .preview{font-size:clamp(14px,4.4vw,22px);text-align:right;opacity:.6;min-height:1.5em;margin-top:8px;word-break:break-all;flex:0 0 auto}
+  .preview.err{color:#8a1212;opacity:.9}
+  .hist{position:absolute;inset:0;background:var(--lcd);padding:58px 14px 14px;overflow-y:auto;display:none;font-size:12px;line-height:1.6;z-index:1}
+  .hist.open{display:block}
+  .screen.hist-open .prevq,.screen.hist-open .expr,.screen.hist-open .preview,.screen.hist-open .tags{visibility:hidden}
+  .hist .h{padding:9px 0;border-bottom:2px dashed color-mix(in srgb,var(--lcd-ink) 30%,transparent);cursor:pointer;word-break:break-all}
+  .hist .h .a{display:block;text-align:right;font-size:15px}
+  .hist .none{opacity:.6;text-align:center;margin-top:24px;line-height:1.8}
+  .hist .clr{display:block;margin:14px auto 0;background:none;border:2px solid currentColor;color:var(--lcd-ink);font-family:'Press Start 2P',monospace;font-size:9px;padding:8px 10px;cursor:pointer}
   @keyframes blink{50%{opacity:0}}
-  .keys{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:12px}
-  .keys button{font-family:'Press Start 2P',monospace;font-size:10px;padding:13px 0;background:var(--key);color:var(--ink);border:none;cursor:pointer;box-shadow:0 4px 0 #000;position:relative;user-select:none}
-  .keys button:active{transform:translateY(3px);box-shadow:0 1px 0 #000}
-  .keys button small{position:absolute;top:2px;left:0;right:0;font-size:6px;color:var(--blue);display:none}
-  .keys.shift button small{display:block}
-  .keys button.fn{background:var(--line);color:var(--teal);font-size:9px}
-  .keys button.op{background:var(--line);color:var(--orange)}
-  .keys button.num{background:color-mix(in srgb,var(--ink) 84%,var(--bg));color:var(--bg)}
-  .keys button.eq{background:var(--orange);color:var(--bg);box-shadow:0 4px 0 var(--orange-deep)}
-  .keys button.clr{color:var(--red)}
-  .keys button.sec{background:var(--blue);color:var(--bg);box-shadow:0 4px 0 var(--blue-deep)}
-  .keys.shift button.sec{outline:3px solid var(--ink)}
+  /* stepped "pixel-rounded" corners */
+  .pk{--c:8px;clip-path:polygon(0 var(--c),calc(var(--c)/2) var(--c),calc(var(--c)/2) calc(var(--c)/2),var(--c) calc(var(--c)/2),var(--c) 0,calc(100% - var(--c)) 0,calc(100% - var(--c)) calc(var(--c)/2),calc(100% - var(--c)/2) calc(var(--c)/2),calc(100% - var(--c)/2) var(--c),100% var(--c),100% calc(100% - var(--c)),calc(100% - var(--c)/2) calc(100% - var(--c)),calc(100% - var(--c)/2) calc(100% - var(--c)/2),calc(100% - var(--c)) calc(100% - var(--c)/2),calc(100% - var(--c)) 100%,var(--c) 100%,var(--c) calc(100% - var(--c)/2),calc(var(--c)/2) calc(100% - var(--c)/2),calc(var(--c)/2) calc(100% - var(--c)),0 calc(100% - var(--c)))}
+  .sci{display:none;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+  #v-calc.sci-on .sci{display:grid}
+  .sci button{--c:6px;font-family:'Press Start 2P',monospace;font-size:clamp(9px,2.9vw,13px);height:clamp(34px,calc(var(--avail) * .066),50px);border:none;background:var(--line);color:var(--teal);box-shadow:inset 0 -4px 0 rgba(0,0,0,.3);cursor:pointer;user-select:none;-webkit-user-select:none}
+  .sci button.on{background:var(--blue);color:var(--bg)}
+  .sci.shift button.alt{color:var(--blue)}
+  .pad{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:clamp(44px,calc((var(--avail) * .62 - 28px) / 5),100px);gap:clamp(7px,2vw,11px)}
+  #v-calc.sci-on .pad{grid-auto-rows:clamp(40px,calc((var(--avail) * .5 - 28px) / 5),86px)}
+  .pad button{font-family:'Press Start 2P',monospace;font-size:clamp(20px,6.6vw,34px);border:none;background:var(--key);color:var(--ink);box-shadow:inset 0 -7px 0 rgba(0,0,0,.35),inset 0 3px 0 rgba(255,255,255,.07);cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+  .pad button:active,.sci button:active{transform:translateY(3px);filter:brightness(1.18)}
+  .pad button.op{background:color-mix(in srgb,var(--teal) 30%,var(--key));color:var(--ink)}
+  .pad button.ac{background:var(--blue);color:var(--bg)}
+  .pad button.eq{background:var(--orange);color:var(--bg)}
+  .pad button.del{font-family:system-ui,sans-serif;font-size:clamp(26px,7.6vw,38px)}
   /* graph */
   .fxrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
   .fxrow label{font-family:'Press Start 2P',monospace;font-size:9px;width:34px}
@@ -124,12 +138,20 @@
 
   <!-- ============ CALC ============ -->
   <section class="view on" id="v-calc">
-    <div class="card">
-      <div class="lcd" id="lcd"></div>
-      <div class="status"><span id="stShift">&nbsp;</span><span>ANS <b id="stAns">0</b></span></div>
-      <div class="keys" id="keys"></div>
+    <div class="screen" id="screen">
+      <div class="sbar">
+        <button id="histBtn" title="History" aria-label="History">🕘 HISTORY</button>
+        <span class="tags"><span id="stShift"></span><span id="stAngle"></span></span>
+        <button id="sciBtn" title="Scientific keys" aria-label="Scientific keys">SCI ⌄</button>
+      </div>
+      <div class="hist" id="hist"></div>
+      <div class="grow"></div>
+      <div class="prevq" id="prevq"></div>
+      <div class="expr" id="expr"></div>
+      <div class="preview" id="preview"></div>
     </div>
-    <p class="hint">Type with your keyboard too. Tap a past answer to reuse it. 2ND unlocks the blue functions (inverse trig, eˣ, 10ˣ, ³√, nCr, nPr…). Implicit multiply works: <b>2π</b>, <b>3(4+1)</b>, <b>2sin(30)</b>.</p>
+    <div class="sci" id="sci"></div>
+    <div class="pad" id="pad"></div>
   </section>
 
   <!-- ============ GRAPH ============ -->
@@ -332,81 +354,111 @@ function parse(src){
 }
 
 /* ================= CALC view ================= */
-let entry = '', caret = 0, shift = false, ans = store.get('ans', 0);
+let entry = '', caret = 0, shift = false, ans = store.get('ans', 0), sciOn = store.get('sci', false), lastErr = '';
 let history = store.get('history', []);
-const KEYS = [
-  ['2ND','sec','shift'], ['MODE','fn','mode'], ['DEL','fn clr','del'], ['CLEAR','fn clr','clear'], ['←→','fn','caret'],
-  ['x²','fn','^2','x⁻¹','^-1'], ['^','fn','^','ⁿ√','root('], ['√','fn','sqrt(','³√','cbrt('], ['π','fn','π','e','e'], ['!','fn','!','%','%'],
-  ['sin','fn','sin(','sin⁻¹','asin('], ['cos','fn','cos(','cos⁻¹','acos('], ['tan','fn','tan(','tan⁻¹','atan('], ['log','fn','log(','10ˣ','10^('], ['ln','fn','ln(','eˣ','e^('],
-  ['(','op','('], [')','op',')'], [',','op',','], ['EE','fn','E','nCr','ncr('], ['÷','op','/','nPr','npr('],
-  ['7','num','7'], ['8','num','8'], ['9','num','9'], ['ANS','fn','ans','x','x'], ['×','op','*'],
-  ['4','num','4'], ['5','num','5'], ['6','num','6'], ['(-)','fn','-','abs','abs('], ['−','op','-'],
-  ['1','num','1'], ['2','num','2'], ['3','num','3'], ['STO','fn','sto','rand','rand'], ['+','op','+'],
-  ['0','num','0'], ['.','num','.'], ['ENT','eq','enter'], ['ENT','eq','enter'], ['ENT','eq','enter']
+// Main pad: [label, class, action]
+const PAD = [
+  ['AC', 'ac', 'clear'], ['( )', 'op', 'paren'], ['%', 'op', '%'], ['÷', 'op', '/'],
+  ['7', '', '7'], ['8', '', '8'], ['9', '', '9'], ['×', 'op', '*'],
+  ['4', '', '4'], ['5', '', '5'], ['6', '', '6'], ['−', 'op', '-'],
+  ['1', '', '1'], ['2', '', '2'], ['3', '', '3'], ['+', 'op', '+'],
+  ['0', '', '0'], ['.', '', '.'], ['⌫', 'del', 'del'], ['=', 'eq', 'enter']
+];
+// Scientific keys: [label, action, 2nd label, 2nd action]
+const SCI = [
+  ['2ND', 'shift'], ['DEG', 'mode'], ['sin', 'sin(', 'sin⁻¹', 'asin('], ['cos', 'cos(', 'cos⁻¹', 'acos('], ['tan', 'tan(', 'tan⁻¹', 'atan('],
+  ['√', 'sqrt(', '³√', 'cbrt('], ['x²', '^2', 'x⁻¹', '^-1'], ['xʸ', '^', 'ⁿ√', 'root('], ['ln', 'ln(', 'eˣ', 'e^('], ['log', 'log(', '10ˣ', '10^('],
+  ['π', 'π', 'e', 'e'], ['n!', '!', 'nCr', 'ncr('], ['EE', 'E', 'nPr', 'npr('], ['ANS', 'ans', 'rand', 'rand'], ['|x|', 'abs(', ',', ',']
 ];
 function buildKeys(){
-  const box = $('keys'); box.innerHTML = '';
-  let seen = 0;
-  KEYS.forEach(([label, cls, act, sLabel, sAct], idx) => {
-    if (act === 'enter'){ if (seen++) return; }
-    const b = document.createElement('button');
-    b.className = cls; b.innerHTML = (sLabel ? `<small>${sLabel}</small>` : '') + label;
-    if (act === 'enter') b.style.gridColumn = 'span 3';
-    b.addEventListener('click', () => press(shift && sAct ? sAct : act));
-    box.appendChild(b);
-  });
+  $('pad').innerHTML = PAD.map(([l, c, a], i) => `<button class="pk ${c}" data-i="${i}" aria-label="${a === 'del' ? 'Backspace' : a === 'enter' ? 'Equals' : l}">${l}</button>`).join('');
+  $('pad').querySelectorAll('button').forEach(b => b.addEventListener('click', () => press(PAD[+b.dataset.i][2])));
+  renderSci();
 }
+function renderSci(){
+  $('sci').classList.toggle('shift', shift);
+  $('sci').innerHTML = SCI.map(([l, a, l2], i) => `<button class="pk ${a === 'shift' && shift ? 'on' : ''} ${l2 ? 'alt' : ''}" data-i="${i}">${a === 'mode' ? angle : shift && l2 ? l2 : l}</button>`).join('');
+  $('sci').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { const k = SCI[+b.dataset.i]; press(shift && k[3] ? k[3] : k[1]); }));
+}
+function setSci(on){ sciOn = on; store.set('sci', on); $('v-calc').classList.toggle('sci-on', on); $('sciBtn').classList.toggle('on', on); $('sciBtn').textContent = on ? 'SCI ⌃' : 'SCI ⌄'; fitExpr(); }
+$('sciBtn').onclick = () => setSci(!sciOn);
 function insert(s){ entry = entry.slice(0, caret) + s + entry.slice(caret); caret += s.length; }
+// "( )" key: closes a bracket when one is open and the last thing typed can end a term, else opens one.
+function smartParen(){
+  const before = entry.slice(0, caret), open = (before.match(/\(/g) || []).length - (before.match(/\)/g) || []).length;
+  insert(open > 0 && /[0-9.)π e!%]$/.test(before.replace(/ans$/, '1')) ? ')' : '(');
+}
 function press(act){
-  const wasShift = shift; shift = false;
+  const wasShift = shift; shift = false; lastErr = '';
   switch (act){
     case 'shift': shift = !wasShift; break;
     case 'mode': toggleAngle(); break;
-    case 'del': if (caret > 0){ entry = entry.slice(0, caret - 1) + entry.slice(caret); caret--; } break;
-    case 'clear': if (entry) { entry = ''; caret = 0; } else { history = []; store.set('history', history); } break;
-    case 'caret': caret = caret >= entry.length ? 0 : entry.length; break;
+    case 'del': if (caret > 0){ const m = entry.slice(0, caret).match(/(asin\(|acos\(|atan\(|sqrt\(|cbrt\(|root\(|sin\(|cos\(|tan\(|log\(|ln\(|abs\(|ncr\(|npr\(|ans|rand|.)$/); const n = m ? m[0].length : 1; entry = entry.slice(0, caret - n) + entry.slice(caret); caret -= n; } break;
+    case 'clear': entry = ''; caret = 0; break;
+    case 'paren': smartParen(); break;
     case 'enter': run(); break;
-    case 'sto': insert('ans'); break;
     default:
-      // operator first on an empty line continues from Ans, like a TI
-      if (entry === '' && ['+','*','/','^2','^-1','^','!','%'].includes(act) && history.length) insert('ans');
+      // An operator on an empty line continues from the last answer.
+      if (entry === '' && ['+', '-', '*', '/', '^2', '^-1', '^', '!', '%'].includes(act) && history.length && !history[history.length - 1].err) insert(fmt(ans).replace('E', 'E'));
       insert(act);
   }
-  $('keys').classList.toggle('shift', shift);
-  $('stShift').textContent = shift ? '2ND' : ' ';
-  renderLcd();
+  renderSci(); renderLcd();
 }
-function pretty(s){ return esc(s).replace(/\*/g, '×').replace(/\//g, '÷').replace(/sqrt\(/g, '√(').replace(/ans/g, 'Ans'); }
+function pretty(s){ return esc(s).replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−').replace(/sqrt\(/g, '√(').replace(/cbrt\(/g, '³√(').replace(/ans/g, 'Ans'); }
+function evalEntry(src){ try { const a = parse(src)({ x: 0, ans }); return typeof a === 'number' && !isNaN(a) ? a : null; } catch { return null; } }
 function run(){
   const src = entry.trim();
-  if (!src){ if (history.length){ entry = history[history.length - 1].q; caret = entry.length; } return; }
+  if (!src) return;
   let a, err = null;
   try { a = parse(src)({ x: 0, ans }); if (typeof a !== 'number' || isNaN(a)) err = 'ERR:DOMAIN'; }
   catch (e){ err = 'ERR:' + e.message; }
-  history.push({ q: src, a: err || fmt(a), err: !!err });
-  if (history.length > 60) history.shift();
-  if (!err){ ans = a; store.set('ans', ans); }
-  store.set('history', history);
+  if (err){ lastErr = err; renderLcd(); return; } // keep the expression so it can be fixed
+  history.push({ q: src, a: fmt(a) });
+  if (history.length > 80) history.shift();
+  ans = a; store.set('ans', ans); store.set('history', history);
   entry = ''; caret = 0;
-  const solved = store.get('solved.' + new Date().toDateString(), 0) + (err ? 0 : 1);
+  const solved = store.get('solved.' + new Date().toDateString(), 0) + 1;
   store.set('solved.' + new Date().toDateString(), solved);
-  if (solved === 5 && !err) toast('QUEST: FIVE A DAY ✔ +25 XP');
+  if (solved === 5) toast('QUEST: FIVE A DAY ✔ +25 XP');
+}
+// Shrink the big number to fit the screen width (pixel font is monospaced).
+function fitExpr(){
+  const el = $('expr'), w = el.clientWidth || 300, len = Math.max(1, el.textContent.length);
+  const max = Math.min(sciOn ? 38 : 46, w / 6.5), size = Math.max(16, Math.min(max, w / len));
+  el.style.setProperty('--fs', size.toFixed(1) + 'px');
 }
 function renderLcd(){
-  const lcd = $('lcd');
-  lcd.innerHTML = history.map((h, i) => `<div class="row"><span class="q">${pretty(h.q)}</span><span class="a ${h.err ? 'err' : ''}" data-i="${i}">${esc(h.a)}</span></div>`).join('')
-    + `<div class="entry">${pretty(entry.slice(0, caret))}<span class="cursor"></span>${pretty(entry.slice(caret))}</div>`;
-  lcd.scrollTop = lcd.scrollHeight;
-  $('stAns').textContent = fmt(ans);
+  const last = history[history.length - 1];
+  if (entry){
+    $('prevq').innerHTML = last ? `${pretty(last.q)} = ${esc(last.a)}` : '';
+    $('expr').innerHTML = `${pretty(entry.slice(0, caret))}<span class="cursor"></span>${pretty(entry.slice(caret))}`;
+    const v = /[^0-9.]/.test(entry) ? evalEntry(entry) : null;
+    $('preview').className = 'preview' + (lastErr ? ' err' : '');
+    $('preview').textContent = lastErr || (v !== null ? '= ' + fmt(v) : '');
+  } else {
+    $('prevq').innerHTML = last ? `${pretty(last.q)} =` : '';
+    $('expr').innerHTML = (last ? esc(last.a) : '0') + '<span class="cursor"></span>';
+    $('preview').className = 'preview'; $('preview').textContent = '';
+  }
+  $('stShift').textContent = shift ? '2ND' : '';
+  $('stAngle').textContent = angle;
+  fitExpr();
+  $('expr').scrollTop = $('expr').scrollHeight;
 }
-$('lcd').addEventListener('click', e => {
-  const a = e.target.closest('.a'); if (!a) return;
-  const h = history[+a.dataset.i]; if (h.err) { entry = h.q; caret = entry.length; } else insert(h.a.replace('E', 'E'));
-  renderLcd();
-});
-function toggleAngle(){ angle = angle === 'DEG' ? 'RAD' : 'DEG'; store.set('angle', angle); $('angleBtn').textContent = angle; toast(angle + ' MODE'); if ($('v-graph').classList.contains('on')) drawGraph(); }
+$('prevq').onclick = () => { const last = history[history.length - 1]; if (last && !entry){ entry = last.q; caret = entry.length; renderLcd(); } };
+function renderHist(){
+  $('hist').innerHTML = history.length
+    ? [...history].reverse().map((h, k) => `<div class="h" data-i="${history.length - 1 - k}">${pretty(h.q)}<span class="a">= ${esc(h.a)}</span></div>`).join('') + '<button class="clr" id="histClr">CLEAR HISTORY</button>'
+    : '<div class="none">No calculations yet.<br>Your history shows up here.</div>';
+  $('hist').querySelectorAll('.h').forEach(d => d.onclick = () => { insert(history[+d.dataset.i].a); toggleHist(false); renderLcd(); });
+  const c = $('histClr'); if (c) c.onclick = () => { history = []; store.set('history', history); renderHist(); renderLcd(); };
+}
+function toggleHist(on = !$('hist').classList.contains('open')){ $('hist').classList.toggle('open', on); $('screen').classList.toggle('hist-open', on); $('histBtn').classList.toggle('on', on); if (on) renderHist(); }
+$('histBtn').onclick = () => toggleHist();
+function toggleAngle(){ angle = angle === 'DEG' ? 'RAD' : 'DEG'; store.set('angle', angle); $('angleBtn').textContent = angle; toast(angle + ' MODE'); renderSci(); renderLcd(); if ($('v-graph').classList.contains('on')) drawGraph(); }
 $('angleBtn').textContent = angle;
 $('angleBtn').addEventListener('click', toggleAngle);
+window.addEventListener('resize', fitExpr);
 document.addEventListener('keydown', e => {
   if (!$('v-calc').classList.contains('on')) return;
   if (e.target.matches('input,textarea,select')) return;
@@ -414,13 +466,13 @@ document.addEventListener('keydown', e => {
   const k = e.key;
   if (k === 'Enter' || k === '='){ e.preventDefault(); press('enter'); }
   else if (k === 'Backspace'){ e.preventDefault(); press('del'); }
-  else if (k === 'Escape'){ press('clear'); }
+  else if (k === 'Escape'){ if ($('hist').classList.contains('open')) toggleHist(false); else press('clear'); }
   else if (k === 'ArrowLeft'){ caret = Math.max(0, caret - 1); renderLcd(); }
   else if (k === 'ArrowRight'){ caret = Math.min(entry.length, caret + 1); renderLcd(); }
-  else if (k === 'ArrowUp'){ if (history.length){ entry = history[history.length - 1].q; caret = entry.length; renderLcd(); } }
-  else if (k.length === 1 && /[0-9a-zA-Z.+\-*/^()!%,π ]/.test(k)){ e.preventDefault(); insert(k); renderLcd(); }
+  else if (k === 'ArrowUp'){ const last = history[history.length - 1]; if (last){ entry = last.q; caret = entry.length; renderLcd(); } }
+  else if (k.length === 1 && /[0-9a-zA-Z.+\-*/^()!%,π ]/.test(k)){ e.preventDefault(); lastErr = ''; insert(k); renderLcd(); }
 });
-buildKeys(); renderLcd();
+buildKeys(); setSci(sciOn); renderLcd();
 
 /* ================= GRAPH view ================= */
 const COLORS = ['', '#b4231f', '#1d4ed8', '#7c3aed']; // Y1 follows the screen ink colour
