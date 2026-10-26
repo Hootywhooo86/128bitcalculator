@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">128bitcalculator</string>
+    <string name="title_activity_main">128bitcalculator</string>
+    <string name="package_name">com.hootywhooo86.bitcalculator</string>
+    <string name="custom_url_scheme">com.hootywhooo86.bitcalculator</string>
+</resources>
