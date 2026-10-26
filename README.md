@@ -36,7 +36,7 @@ Everything is saved on the device (localStorage).
 
 ## Android app
 
-`android/` wraps the same web app with [Capacitor](https://capacitorjs.com) as an offline Android app (everything bundled, no internet needed). GitHub Actions builds the APK on every push (`.github/workflows/android.yml`); pushes to `main` publish it at https://github.com/Hootywhooo86/128bitcalculator/releases/tag/android-latest. Open that page on your phone, download `128bitcalculator.apk`, and allow installs from your browser. Later builds install over the old one and keep your data.
+`android/` wraps the same web app with [Capacitor](https://capacitorjs.com) as an offline Android app (everything bundled, no internet needed). GitHub Actions builds the APK on every push (`.github/workflows/android.yml`); pushes to `main` publish it at https://github.com/Hootywhooo86/128bitcalculator/releases/tag/android-latest (direct download: https://github.com/Hootywhooo86/128bitcalculator/releases/download/android-latest/128bitcalculator.apk). Open that page on your phone, download `128bitcalculator.apk`, and allow installs from your browser. Later builds install over the old one and keep your data.
 
 - Build it yourself: `npm ci && npx cap sync android && cd android && ./gradlew assembleDebug` (JDK 21 + Android SDK). `tools/make_icons.py` regenerates the pixel icons.
 - The app keeps its own saved data, separate from the browser version, and the "use on every 128bit app" colour switch can't reach across separate Android apps.
