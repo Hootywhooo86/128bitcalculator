@@ -49,17 +49,19 @@
   #v-calc{--avail:calc(100vh - 132px - var(--sat) - var(--sab));--avail:calc(100dvh - 132px - var(--sat) - var(--sab))}
   #v-calc.on{display:flex;flex-direction:column;gap:10px;min-height:var(--avail)}
   .screen{position:relative;flex:1 1 auto;min-height:120px;background:var(--lcd);color:var(--lcd-ink);border:4px solid var(--bg);box-shadow:inset 0 0 0 3px var(--lcd-edge),6px 6px 0 #000;padding:12px 14px 14px;display:flex;flex-direction:column;justify-content:flex-end;font-family:'Press Start 2P',monospace;overflow:hidden}
-  .sbar{position:absolute;top:10px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;z-index:2}
+  .sbar{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:8px;flex:0 0 auto}
+  .screen .grow{flex:1 1 auto;min-height:6px}
   .sbar button{background:none;border:2px solid currentColor;color:var(--lcd-ink);font-family:'Press Start 2P',monospace;font-size:9px;padding:7px 8px;cursor:pointer;opacity:.85}
   .sbar button.on{background:var(--lcd-ink);color:var(--lcd)}
   .sbar .tags{font-size:8px;opacity:.7;display:flex;gap:8px}
-  .prevq{font-size:clamp(10px,3vw,14px);text-align:right;opacity:.55;min-height:1.5em;word-break:break-all;margin-top:34px;cursor:pointer}
-  .expr{font-size:var(--fs,40px);text-align:right;word-break:break-all;line-height:1.3;max-height:3.95em;overflow-y:auto;scrollbar-width:none}
+  .prevq{font-size:clamp(10px,3vw,14px);text-align:right;opacity:.55;min-height:1.5em;word-break:break-all;cursor:pointer;flex:0 0 auto}
+  .expr{font-size:var(--fs,40px);text-align:right;word-break:break-all;line-height:1.3;max-height:3.95em;overflow-y:auto;scrollbar-width:none;flex:0 1 auto;min-height:1.3em}
   .expr .cursor{display:inline-block;width:.14em;height:1em;background:var(--lcd-ink);vertical-align:-.12em;animation:blink 1s steps(1) infinite;margin-left:2px}
-  .preview{font-size:clamp(14px,4.4vw,22px);text-align:right;opacity:.6;min-height:1.5em;margin-top:8px;word-break:break-all}
+  .preview{font-size:clamp(14px,4.4vw,22px);text-align:right;opacity:.6;min-height:1.5em;margin-top:8px;word-break:break-all;flex:0 0 auto}
   .preview.err{color:#8a1212;opacity:.9}
-  .hist{position:absolute;inset:0;background:var(--lcd);padding:50px 14px 14px;overflow-y:auto;display:none;font-size:12px;line-height:1.6;z-index:1}
+  .hist{position:absolute;inset:0;background:var(--lcd);padding:58px 14px 14px;overflow-y:auto;display:none;font-size:12px;line-height:1.6;z-index:1}
   .hist.open{display:block}
+  .screen.hist-open .prevq,.screen.hist-open .expr,.screen.hist-open .preview,.screen.hist-open .tags{visibility:hidden}
   .hist .h{padding:9px 0;border-bottom:2px dashed color-mix(in srgb,var(--lcd-ink) 30%,transparent);cursor:pointer;word-break:break-all}
   .hist .h .a{display:block;text-align:right;font-size:15px}
   .hist .none{opacity:.6;text-align:center;margin-top:24px;line-height:1.8}
@@ -74,7 +76,6 @@
   .sci.shift button.alt{color:var(--blue)}
   .pad{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:clamp(44px,calc((var(--avail) * .62 - 28px) / 5),100px);gap:clamp(7px,2vw,11px)}
   #v-calc.sci-on .pad{grid-auto-rows:clamp(40px,calc((var(--avail) * .5 - 28px) / 5),86px)}
-  #v-calc.sci-on .prevq{margin-top:30px}
   .pad button{font-family:'Press Start 2P',monospace;font-size:clamp(20px,6.6vw,34px);border:none;background:var(--key);color:var(--ink);box-shadow:inset 0 -7px 0 rgba(0,0,0,.35),inset 0 3px 0 rgba(255,255,255,.07);cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
   .pad button:active,.sci button:active{transform:translateY(3px);filter:brightness(1.18)}
   .pad button.op{background:color-mix(in srgb,var(--teal) 30%,var(--key));color:var(--ink)}
@@ -144,6 +145,7 @@
         <button id="sciBtn" title="Scientific keys" aria-label="Scientific keys">SCI ⌄</button>
       </div>
       <div class="hist" id="hist"></div>
+      <div class="grow"></div>
       <div class="prevq" id="prevq"></div>
       <div class="expr" id="expr"></div>
       <div class="preview" id="preview"></div>
@@ -451,7 +453,7 @@ function renderHist(){
   $('hist').querySelectorAll('.h').forEach(d => d.onclick = () => { insert(history[+d.dataset.i].a); toggleHist(false); renderLcd(); });
   const c = $('histClr'); if (c) c.onclick = () => { history = []; store.set('history', history); renderHist(); renderLcd(); };
 }
-function toggleHist(on = !$('hist').classList.contains('open')){ $('hist').classList.toggle('open', on); $('histBtn').classList.toggle('on', on); if (on) renderHist(); }
+function toggleHist(on = !$('hist').classList.contains('open')){ $('hist').classList.toggle('open', on); $('screen').classList.toggle('hist-open', on); $('histBtn').classList.toggle('on', on); if (on) renderHist(); }
 $('histBtn').onclick = () => toggleHist();
 function toggleAngle(){ angle = angle === 'DEG' ? 'RAD' : 'DEG'; store.set('angle', angle); $('angleBtn').textContent = angle; toast(angle + ' MODE'); renderSci(); renderLcd(); if ($('v-graph').classList.contains('on')) drawGraph(); }
 $('angleBtn').textContent = angle;
