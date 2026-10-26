@@ -20,6 +20,7 @@
     --orange-deep:#a05e00;
     --teal:#2dd4bf;
     --blue:#38bdf8;
+    --blue-deep:#0369a1;
     --red:#ff5d5d;
     --lcd:#b8c99a;
     --lcd-ink:#1e2a12;
@@ -39,7 +40,7 @@
   .logo{display:flex;align-items:center;gap:10px;font-family:'Press Start 2P',monospace;font-size:12px}
   .logo i{width:26px;height:26px;background:var(--orange);display:grid;place-items:center;font-style:normal;font-size:13px;box-shadow:0 3px 0 var(--orange-deep)}
   .mode{font-family:'Press Start 2P',monospace;font-size:9px;background:var(--key);color:var(--teal);border:none;padding:8px 10px;box-shadow:0 3px 0 #000;cursor:pointer}
-  .tabs{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:3px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);z-index:8;padding-bottom:env(safe-area-inset-bottom)}
+  .tabs{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:3px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);z-index:8;padding-bottom:env(safe-area-inset-bottom);padding-left:max(0px,calc(50% - 240px));padding-right:max(0px,calc(50% - 240px))}
   .tabs button{background:none;border:none;padding:10px 0 12px;font-family:'Press Start 2P',monospace;font-size:7px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer}
   .tabs button span{font-size:18px;font-family:system-ui}
   .tabs button.on{color:var(--orange)}
@@ -62,12 +63,12 @@
   .keys button:active{transform:translateY(3px);box-shadow:0 1px 0 #000}
   .keys button small{position:absolute;top:2px;left:0;right:0;font-size:6px;color:var(--blue);display:none}
   .keys.shift button small{display:block}
-  .keys button.fn{background:#2a2a4a;color:var(--teal);font-size:9px}
-  .keys button.op{background:#2a2a4a;color:var(--orange)}
-  .keys button.num{background:#d7d3ea;color:#0b0b16}
+  .keys button.fn{background:var(--line);color:var(--teal);font-size:9px}
+  .keys button.op{background:var(--line);color:var(--orange)}
+  .keys button.num{background:color-mix(in srgb,var(--ink) 84%,var(--bg));color:var(--bg)}
   .keys button.eq{background:var(--orange);color:var(--bg);box-shadow:0 4px 0 var(--orange-deep)}
   .keys button.clr{color:var(--red)}
-  .keys button.sec{background:var(--blue);color:var(--bg);box-shadow:0 4px 0 #0369a1}
+  .keys button.sec{background:var(--blue);color:var(--bg);box-shadow:0 4px 0 var(--blue-deep)}
   .keys.shift button.sec{outline:3px solid var(--ink)}
   /* graph */
   .fxrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
@@ -79,13 +80,13 @@
   canvas{display:block;width:100%;background:var(--lcd);border:4px solid var(--bg);image-rendering:pixelated;touch-action:none}
   .win{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
   .win label{font-size:10px;color:var(--muted);display:block;margin-bottom:3px;font-family:'Press Start 2P',monospace}
-  .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;justify-content:center}
   .btn{font-family:'Press Start 2P',monospace;font-size:9px;padding:11px 12px;background:var(--key);color:var(--ink);border:none;box-shadow:0 4px 0 #000;cursor:pointer}
   .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #000}
   .btn.go{background:var(--orange);color:var(--bg);box-shadow:0 4px 0 var(--orange-deep)}
   .trace{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--teal);margin-top:10px;min-height:14px;line-height:1.6}
   /* convert */
-  .cats{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:10px;scrollbar-width:none}
+  .cats{display:flex;gap:6px;overflow-x:auto;justify-content:safe center;padding-bottom:8px;margin-bottom:10px;scrollbar-width:none}
   .cats button{flex:0 0 auto;font-family:'Press Start 2P',monospace;font-size:8px;padding:10px;background:var(--key);color:var(--muted);border:3px solid var(--line);cursor:pointer}
   .cats button.on{color:var(--bg);background:var(--teal);border-color:var(--teal-deep)}
   .convgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -95,8 +96,8 @@
   .all{list-style:none;font-size:14px;line-height:2}
   .all li{display:flex;justify-content:space-between;border-bottom:1px dashed var(--line)}
   .all li b{color:var(--teal);font-weight:600}
-  h3{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--teal);margin-bottom:10px;line-height:1.5}
-  .hint{font-size:12px;color:var(--muted);line-height:1.5;margin-top:8px}
+  h3{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--teal);margin-bottom:10px;line-height:1.5;text-align:center}
+  .hint{font-size:12px;color:var(--muted);line-height:1.5;margin-top:8px;text-align:center}
   textarea{background:var(--bg);border:3px solid var(--line);color:var(--ink);font-size:14px;padding:10px;width:100%;min-height:120px;font-family:'Inter',sans-serif;resize:vertical}
   .stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:14px}
   .stats div{background:var(--bg);padding:8px;border:2px solid var(--line)}
@@ -105,7 +106,7 @@
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:var(--orange);color:var(--bg);font-family:'Press Start 2P',monospace;font-size:10px;padding:12px 16px;box-shadow:0 4px 0 var(--orange-deep);transition:transform .25s;z-index:10}
   .toast.show{transform:translateX(-50%) translateY(0)}
 </style>
-<script src="theme.js" data-app="calc" data-accent="orange" data-second="teal" data-lcd data-mount="header .tools"></script>
+<script src="theme.js" data-app="calc" data-accent="orange" data-second="teal" data-third="blue" data-lcd data-mount="header .tools"></script>
 </head>
 <body>
 <div class="app">
