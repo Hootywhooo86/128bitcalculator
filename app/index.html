@@ -354,7 +354,7 @@ function parse(src){
 }
 
 /* ================= CALC view ================= */
-let entry = '', caret = 0, shift = false, ans = store.get('ans', 0), sciOn = store.get('sci', false), lastErr = '';
+let entry = '', caret = 0, cleared = store.get('cleared', false), shift = false, ans = store.get('ans', 0), sciOn = store.get('sci', false), lastErr = '';
 let history = store.get('history', []);
 // Main pad: [label, class, action]
 const PAD = [
@@ -394,12 +394,12 @@ function press(act){
     case 'shift': shift = !wasShift; break;
     case 'mode': toggleAngle(); break;
     case 'del': if (caret > 0){ const m = entry.slice(0, caret).match(/(asin\(|acos\(|atan\(|sqrt\(|cbrt\(|root\(|sin\(|cos\(|tan\(|log\(|ln\(|abs\(|ncr\(|npr\(|ans|rand|.)$/); const n = m ? m[0].length : 1; entry = entry.slice(0, caret - n) + entry.slice(caret); caret -= n; } break;
-    case 'clear': entry = ''; caret = 0; break;
+    case 'clear': entry = ''; caret = 0; cleared = true; store.set('cleared', true); break; // AC wipes the screen back to 0
     case 'paren': smartParen(); break;
     case 'enter': run(); break;
     default:
       // An operator on an empty line continues from the last answer.
-      if (entry === '' && ['+', '-', '*', '/', '^2', '^-1', '^', '!', '%'].includes(act) && history.length && !history[history.length - 1].err) insert(fmt(ans).replace('E', 'E'));
+      if (entry === '' && !cleared && ['+', '-', '*', '/', '^2', '^-1', '^', '!', '%'].includes(act) && history.length && !history[history.length - 1].err) insert(fmt(ans).replace('E', 'E'));
       insert(act);
   }
   renderSci(); renderLcd();
@@ -416,7 +416,7 @@ function run(){
   history.push({ q: src, a: fmt(a) });
   if (history.length > 80) history.shift();
   ans = a; store.set('ans', ans); store.set('history', history);
-  entry = ''; caret = 0;
+  entry = ''; caret = 0; cleared = false; store.set('cleared', false);
   const solved = store.get('solved.' + new Date().toDateString(), 0) + 1;
   store.set('solved.' + new Date().toDateString(), solved);
   if (solved === 5) toast('QUEST: FIVE A DAY ✔ +25 XP');
@@ -428,7 +428,7 @@ function fitExpr(){
   el.style.setProperty('--fs', size.toFixed(1) + 'px');
 }
 function renderLcd(){
-  const last = history[history.length - 1];
+  const last = cleared ? null : history[history.length - 1];
   if (entry){
     $('prevq').innerHTML = last ? `${pretty(last.q)} = ${esc(last.a)}` : '';
     $('expr').innerHTML = `${pretty(entry.slice(0, caret))}<span class="cursor"></span>${pretty(entry.slice(caret))}`;
