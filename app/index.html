@@ -82,6 +82,58 @@
   .pad button.ac{background:var(--blue);color:var(--bg)}
   .pad button.eq{background:var(--orange);color:var(--bg)}
   .pad button.del{font-family:system-ui,sans-serif;font-size:clamp(26px,7.6vw,38px)}
+  /* ---------- 128-bit pixel skin ---------- */
+  /* LCD: recessed dot-matrix glass with a faint pixel grid and ink shadow */
+  .screen{box-shadow:inset 0 0 0 3px var(--lcd-edge),inset 0 7px 0 rgba(0,0,0,.09),6px 6px 0 #000}
+  .screen::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:3;
+    background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.055) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(0,0,0,.045) 0 1px,transparent 1px 3px)}
+  .expr,.prevq,.preview,.hist{text-shadow:2px 2px 0 color-mix(in srgb,var(--lcd-ink) 16%,transparent)}
+  .led{display:inline-block;width:8px;height:8px;background:var(--lcd-ink);opacity:.75;animation:led 2.4s steps(1) infinite}
+  @keyframes led{0%,70%{opacity:.75}71%,100%{opacity:.2}}
+  /* Keys: pixel bevel (light top-left, dark bottom-right), a glint pixel and a hard drop shadow on the label */
+  .pad button,.sci button{position:relative;--hl:rgba(255,255,255,.16);--sh:rgba(0,0,0,.42);
+    box-shadow:inset 0 4px 0 var(--hl),inset 4px 0 0 rgba(255,255,255,.06),inset 0 -7px 0 var(--sh),inset -4px 0 0 rgba(0,0,0,.22);
+    text-shadow:0 3px 0 rgba(0,0,0,.4);transition:none}
+  #pad button,#sci button{background-image:linear-gradient(var(--hl),var(--hl)),linear-gradient(var(--hl),var(--hl));
+    background-size:8px 4px,4px 4px;background-position:10px 10px,10px 14px;background-repeat:no-repeat}
+  .pad button{font-size:clamp(18px,5.8vw,29px);line-height:1}
+  .sci button{box-shadow:inset 0 3px 0 var(--hl),inset 0 -5px 0 var(--sh),inset -3px 0 0 rgba(0,0,0,.2)}
+  #sci button{background-size:6px 3px,3px 3px;background-position:7px 7px,7px 10px}
+  .pad button.ac,.pad button.eq,.sci button.on{--hl:rgba(255,255,255,.38);--sh:rgba(0,0,0,.28);text-shadow:0 3px 0 rgba(0,0,0,.18)}
+  .pad button.op{color:color-mix(in srgb,var(--teal) 55%,var(--ink))}
+  /* Press: snaps down a few pixels and lights up, no smooth easing */
+  .pad button:active,.sci button:active{transform:none;filter:none}
+  .pad button.hit,.sci button.hit{transform:translateY(4px);filter:brightness(1.3);box-shadow:inset 0 2px 0 var(--hl),inset 0 -3px 0 var(--sh),inset -4px 0 0 rgba(0,0,0,.22)}
+  /* The = key glints every few seconds */
+  .pad button.eq::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 0 42%,rgba(255,255,255,.42) 42% 54%,transparent 54%);transform:translateX(-110%);animation:glint 4.5s steps(10) infinite}
+  @keyframes glint{0%,72%{transform:translateX(-110%)}100%{transform:translateX(110%)}}
+  .pad button.del svg{width:clamp(26px,7.4vw,36px);height:auto;fill:currentColor;shape-rendering:crispEdges;filter:drop-shadow(0 3px 0 rgba(0,0,0,.4));vertical-align:middle}
+  .pad{position:relative}
+  .spark{position:absolute;width:6px;height:6px;pointer-events:none;z-index:5;animation:spark .34s steps(5) forwards}
+  @keyframes spark{from{transform:translate(0,0);opacity:1}to{transform:translate(var(--dx),var(--dy));opacity:0}}
+  /* LCD animations */
+  .expr .pop{display:inline-block;animation:pop .18s steps(3)}
+  @keyframes pop{from{transform:scale(.4) translateY(-30%)}to{transform:none}}
+  .screen.shake{animation:shake .3s steps(6)}
+  @keyframes shake{0%,100%{transform:none}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+  .screen::after{content:"";position:absolute;left:0;right:0;top:0;height:0;background:var(--lcd-ink);opacity:.85;pointer-events:none;z-index:4}
+  .screen.wipe::after{animation:wipe .32s steps(8)}
+  @keyframes wipe{0%{top:0;height:0}50%{top:0;height:100%}100%{top:100%;height:0}}
+  .screen.flash .expr{animation:flash .3s steps(3)}
+  @keyframes flash{0%{transform:translateY(-8px);opacity:.3}100%{transform:none;opacity:1}}
+  .screen.boot{animation:boot .55s steps(9)}
+  @keyframes boot{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
+  #v-calc.booting .pad button,#v-calc.booting .sci button{animation:drop .42s steps(6) backwards;animation-delay:calc(var(--i) * 22ms + 120ms)}
+  @keyframes drop{from{transform:translateY(-18px);opacity:0}to{transform:none;opacity:1}}
+  #v-calc.sci-open .sci button{animation:drop .3s steps(5) backwards;animation-delay:calc(var(--i) * 15ms)}
+  .tabs button.on span{animation:hop .5s steps(4)}
+  @keyframes hop{0%,100%{transform:translateY(-2px)}50%{transform:translateY(-7px)}}
+  .logo i{animation:bob 3s steps(2) infinite}
+  @keyframes bob{0%,100%{transform:none}50%{transform:translateY(-2px)}}
+  @media (prefers-reduced-motion:reduce){
+    .led,.pad button.eq::after,.logo i,.tabs button.on span,.expr .pop,.screen.shake,.screen.wipe::after,.screen.flash .expr,.screen.boot,#v-calc.booting .pad button,#v-calc.booting .sci button,#v-calc.sci-open .sci button{animation:none}
+    .spark{display:none}
+  }
   /* graph */
   .fxrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
   .fxrow label{font-family:'Press Start 2P',monospace;font-size:9px;width:34px}
@@ -141,7 +193,7 @@
     <div class="screen" id="screen">
       <div class="sbar">
         <button id="histBtn" title="History" aria-label="History">🕘 HISTORY</button>
-        <span class="tags"><span id="stShift"></span><span id="stAngle"></span></span>
+        <span class="tags"><span class="led" aria-hidden="true"></span><span id="stShift"></span><span id="stAngle"></span></span>
         <button id="sciBtn" title="Scientific keys" aria-label="Scientific keys">SCI ⌄</button>
       </div>
       <div class="hist" id="hist"></div>
@@ -371,38 +423,81 @@ const SCI = [
   ['π', 'π', 'e', 'e'], ['n!', '!', 'nCr', 'ncr('], ['EE', 'E', 'nPr', 'npr('], ['ANS', 'ans', 'rand', 'rand'], ['|x|', 'abs(', ',', ',']
 ];
 function buildKeys(){
-  $('pad').innerHTML = PAD.map(([l, c, a], i) => `<button class="pk ${c}" data-i="${i}" aria-label="${a === 'del' ? 'Backspace' : a === 'enter' ? 'Equals' : l}">${l}</button>`).join('');
-  $('pad').querySelectorAll('button').forEach(b => b.addEventListener('click', () => press(PAD[+b.dataset.i][2])));
+  $('pad').innerHTML = PAD.map(([l, c, a], i) => `<button class="pk ${c}" data-i="${i}" style="--i:${i}" aria-label="${a === 'del' ? 'Backspace' : a === 'enter' ? 'Equals' : l}">${a === 'del' ? DEL_ICON : l}</button>`).join('');
+  $('pad').querySelectorAll('button').forEach(b => { b.addEventListener('click', () => press(PAD[+b.dataset.i][2])); b.addEventListener('pointerdown', keyFx); });
   renderSci();
 }
 function renderSci(){
   $('sci').classList.toggle('shift', shift);
-  $('sci').innerHTML = SCI.map(([l, a, l2], i) => `<button class="pk ${a === 'shift' && shift ? 'on' : ''} ${l2 ? 'alt' : ''}" data-i="${i}">${a === 'mode' ? angle : shift && l2 ? l2 : l}</button>`).join('');
-  $('sci').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { const k = SCI[+b.dataset.i]; press(shift && k[3] ? k[3] : k[1]); }));
+  $('sci').innerHTML = SCI.map(([l, a, l2], i) => `<button class="pk ${a === 'shift' && shift ? 'on' : ''} ${l2 ? 'alt' : ''}" data-i="${i}" style="--i:${i}">${a === 'mode' ? angle : shift && l2 ? l2 : l}</button>`).join('');
+  $('sci').querySelectorAll('button').forEach(b => { b.addEventListener('click', () => { const k = SCI[+b.dataset.i]; press(shift && k[3] ? k[3] : k[1]); }); b.addEventListener('pointerdown', keyFx); });
 }
-function setSci(on){ sciOn = on; store.set('sci', on); $('v-calc').classList.toggle('sci-on', on); $('sciBtn').classList.toggle('on', on); $('sciBtn').textContent = on ? 'SCI ⌃' : 'SCI ⌄'; fitExpr(); }
+function setSci(on){ if (on && !sciOn) replay($('v-calc'), 'sci-open', 700); sciOn = on; store.set('sci', on); $('v-calc').classList.toggle('sci-on', on); $('sciBtn').classList.toggle('on', on); $('sciBtn').textContent = on ? 'SCI ⌃' : 'SCI ⌄'; fitExpr(); }
 $('sciBtn').onclick = () => setSci(!sciOn);
+/* ---------- pixel animations ---------- */
+const DEL_ICON = '<svg viewBox="0 0 16 11" aria-hidden="true"><rect x="5" y="0" width="11" height="1"/><rect x="4" y="1" width="1" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="2" y="3" width="1" height="1"/><rect x="1" y="4" width="1" height="1"/><rect x="0" y="5" width="1" height="1"/><rect x="1" y="6" width="1" height="1"/><rect x="2" y="7" width="1" height="1"/><rect x="3" y="8" width="1" height="1"/><rect x="4" y="9" width="1" height="1"/><rect x="5" y="10" width="11" height="1"/><rect x="15" y="1" width="1" height="9"/><rect x="7" y="3" width="1" height="1"/><rect x="8" y="4" width="1" height="1"/><rect x="9" y="5" width="1" height="1"/><rect x="10" y="6" width="1" height="1"/><rect x="11" y="7" width="1" height="1"/><rect x="11" y="3" width="1" height="1"/><rect x="10" y="4" width="1" height="1"/><rect x="8" y="6" width="1" height="1"/><rect x="7" y="7" width="1" height="1"/></svg>';
+const CALM = matchMedia('(prefers-reduced-motion: reduce)');
+// Restart a CSS animation class (removing and re-adding it in the same frame wouldn't replay it).
+function replay(el, cls, ms){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); clearTimeout(el['_t' + cls]); el['_t' + cls] = setTimeout(() => el.classList.remove(cls), ms); }
+// Key press: snap down, light up, and throw a few pixel sparks from under your finger.
+function keyFx(e){
+  const b = e.currentTarget;
+  b.classList.add('hit');
+  const up = () => { setTimeout(() => b.classList.remove('hit'), 70); removeEventListener('pointerup', up); removeEventListener('pointercancel', up); };
+  addEventListener('pointerup', up); addEventListener('pointercancel', up);
+  if (navigator.vibrate) try { navigator.vibrate(6); } catch {}
+  if (CALM.matches) return;
+  const host = b.closest('.pad') || b.closest('.sci'), hr = host.getBoundingClientRect(), br = b.getBoundingClientRect();
+  if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+  const x = (e.clientX || br.left + br.width / 2) - hr.left, y = (e.clientY || br.top + br.height / 2) - hr.top;
+  const cs = getComputedStyle(b), col = b.classList.contains('ac') || b.classList.contains('eq') ? cs.backgroundColor : cs.color;
+  for (let k = 0; k < 6; k++){
+    const sp = document.createElement('i'), ang = (k / 6) * Math.PI * 2 + Math.random() * .6, r = 26 + Math.random() * 22;
+    sp.className = 'spark';
+    sp.style.cssText = `left:${x - 3}px;top:${y - 3}px;background:${col};--dx:${Math.round(Math.cos(ang) * r / 3) * 3}px;--dy:${Math.round(Math.sin(ang) * r / 3) * 3}px`;
+    host.appendChild(sp); setTimeout(() => sp.remove(), 380);
+  }
+}
+// Answers roll in like an old LCD: digits scramble for a few frames, then lock.
+let rollTimer = null;
+function rollIn(final){
+  clearInterval(rollTimer);
+  if (CALM.matches) return;
+  const el = $('expr'), cur = el.querySelector('.cursor')?.outerHTML || '';
+  let n = 0;
+  rollTimer = setInterval(() => {
+    if (++n > 6){ clearInterval(rollTimer); rollTimer = null; el.innerHTML = esc(final) + cur; return; }
+    el.innerHTML = esc(final.replace(/\d/g, () => (Math.random() * 10) | 0)) + cur;
+  }, 45);
+}
 function insert(s){ entry = entry.slice(0, caret) + s + entry.slice(caret); caret += s.length; }
 // "( )" key: closes a bracket when one is open and the last thing typed can end a term, else opens one.
 function smartParen(){
   const before = entry.slice(0, caret), open = (before.match(/\(/g) || []).length - (before.match(/\)/g) || []).length;
   insert(open > 0 && /[0-9.)π e!%]$/.test(before.replace(/ans$/, '1')) ? ')' : '(');
 }
+let popNext = false;
 function press(act){
+  if (rollTimer){ clearInterval(rollTimer); rollTimer = null; }
   const wasShift = shift; shift = false; lastErr = '';
+  const before = history.length;
   switch (act){
     case 'shift': shift = !wasShift; break;
     case 'mode': toggleAngle(); break;
     case 'del': if (caret > 0){ const m = entry.slice(0, caret).match(/(asin\(|acos\(|atan\(|sqrt\(|cbrt\(|root\(|sin\(|cos\(|tan\(|log\(|ln\(|abs\(|ncr\(|npr\(|ans|rand|.)$/); const n = m ? m[0].length : 1; entry = entry.slice(0, caret - n) + entry.slice(caret); caret -= n; } break;
-    case 'clear': entry = ''; caret = 0; cleared = true; store.set('cleared', true); break; // AC wipes the screen back to 0
-    case 'paren': smartParen(); break;
+    case 'clear': entry = ''; caret = 0; cleared = true; store.set('cleared', true); if (!CALM.matches) replay($('screen'), 'wipe', 400); break; // AC wipes the screen back to 0
+    case 'paren': smartParen(); popNext = true; break;
     case 'enter': run(); break;
     default:
       // An operator on an empty line continues from the last answer.
       if (entry === '' && !cleared && ['+', '-', '*', '/', '^2', '^-1', '^', '!', '%'].includes(act) && history.length && !history[history.length - 1].err) insert(fmt(ans).replace('E', 'E'));
-      insert(act);
+      insert(act); popNext = true;
   }
   renderSci(); renderLcd();
+  if (act === 'enter'){
+    if (lastErr){ if (!CALM.matches) replay($('screen'), 'shake', 350); if (navigator.vibrate) try { navigator.vibrate([20, 40, 20]); } catch {} }
+    else if (history.length > before){ if (!CALM.matches) replay($('screen'), 'flash', 350); rollIn(history[history.length - 1].a); }
+  }
 }
 function pretty(s){ return esc(s).replace(/\*/g, '×').replace(/\//g, '÷').replace(/-/g, '−').replace(/sqrt\(/g, '√(').replace(/cbrt\(/g, '³√(').replace(/ans/g, 'Ans'); }
 function evalEntry(src){ try { const a = parse(src)({ x: 0, ans }); return typeof a === 'number' && !isNaN(a) ? a : null; } catch { return null; } }
@@ -431,7 +526,10 @@ function renderLcd(){
   const last = cleared ? null : history[history.length - 1];
   if (entry){
     $('prevq').innerHTML = last ? `${pretty(last.q)} = ${esc(last.a)}` : '';
-    $('expr').innerHTML = `${pretty(entry.slice(0, caret))}<span class="cursor"></span>${pretty(entry.slice(caret))}`;
+    let head = pretty(entry.slice(0, caret));
+    if (popNext && head && !CALM.matches) head = head.slice(0, -1) + `<span class="pop">${head.slice(-1)}</span>`;
+    popNext = false;
+    $('expr').innerHTML = `${head}<span class="cursor"></span>${pretty(entry.slice(caret))}`;
     const v = /[^0-9.]/.test(entry) ? evalEntry(entry) : null;
     $('preview').className = 'preview' + (lastErr ? ' err' : '');
     $('preview').textContent = lastErr || (v !== null ? '= ' + fmt(v) : '');
@@ -470,9 +568,10 @@ document.addEventListener('keydown', e => {
   else if (k === 'ArrowLeft'){ caret = Math.max(0, caret - 1); renderLcd(); }
   else if (k === 'ArrowRight'){ caret = Math.min(entry.length, caret + 1); renderLcd(); }
   else if (k === 'ArrowUp'){ const last = history[history.length - 1]; if (last){ entry = last.q; caret = entry.length; renderLcd(); } }
-  else if (k.length === 1 && /[0-9a-zA-Z.+\-*/^()!%,π ]/.test(k)){ e.preventDefault(); lastErr = ''; insert(k); renderLcd(); }
+  else if (k.length === 1 && /[0-9a-zA-Z.+\-*/^()!%,π ]/.test(k)){ e.preventDefault(); lastErr = ''; insert(k); popNext = true; renderLcd(); }
 });
-buildKeys(); setSci(sciOn); renderLcd();
+buildKeys();
+if (!CALM.matches){ $('screen').classList.add('boot'); $('v-calc').classList.add('booting'); setTimeout(() => { $('screen').classList.remove('boot'); $('v-calc').classList.remove('booting'); }, 1100); } setSci(sciOn); renderLcd();
 
 /* ================= GRAPH view ================= */
 const COLORS = ['', '#b4231f', '#1d4ed8', '#7c3aed']; // Y1 follows the screen ink colour
